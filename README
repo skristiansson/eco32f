@@ -1,0 +1,10 @@
+Intro
+=====
+eco32f is a pipelined version of the eco32 architecture:
+http://opencores.org/project,eco32
+
+The 'f' in the name stands for fast, full or five
+(as the number of pipeline stages), pick your choice.
+
+The design is a "schoolbook" example of the classic RISC pipeline,
+a single issue, five stage pipeline with interlocks.
