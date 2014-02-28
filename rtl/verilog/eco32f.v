@@ -146,6 +146,9 @@ wire			itlb_umiss;		// From eco32f_mmu of eco32f_mmu.v
 wire [31:0]		itlb_va;		// From eco32f_fetch of eco32f_fetch.v
 wire			lsu_stall;		// From eco32f_lsu of eco32f_lsu.v
 wire [31:0]		mem_alu_result;		// From eco32f_alu of eco32f_alu.v
+wire			mem_exc_dtlb_fault;	// From eco32f_lsu of eco32f_lsu.v
+wire			mem_exc_dtlb_kmiss;	// From eco32f_lsu of eco32f_lsu.v
+wire			mem_exc_dtlb_umiss;	// From eco32f_lsu of eco32f_lsu.v
 wire			mem_flush;		// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		mem_lsu_result;		// From eco32f_lsu of eco32f_lsu.v
 wire			mem_op_load;		// From eco32f_lsu of eco32f_lsu.v
@@ -350,6 +353,9 @@ eco32f_lsu
 	.dtlb_va			(dtlb_va[31:0]),
 	.lsu_stall			(lsu_stall),
 	.mem_lsu_result			(mem_lsu_result[31:0]),
+	.mem_exc_dtlb_umiss		(mem_exc_dtlb_umiss),
+	.mem_exc_dtlb_kmiss		(mem_exc_dtlb_kmiss),
+	.mem_exc_dtlb_fault		(mem_exc_dtlb_fault),
 	.dwbm_adr_o			(dwbm_adr_o[31:0]),
 	.dwbm_stb_o			(dwbm_stb_o),
 	.dwbm_cyc_o			(dwbm_cyc_o),
