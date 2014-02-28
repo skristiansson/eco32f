@@ -43,6 +43,7 @@ module eco32f_ctrl #(
 	output 		  mem_flush,
 
 	input 		  id_bubble,
+	input 		  alu_stall,
 	input 		  lsu_stall,
 
 	input [31:0] 	  ex_rf_x,
@@ -80,7 +81,7 @@ reg		mem_exc_ibus_fault;
 
 // Stall logic - a stall in a later stage stalls the earlier stages
 assign mem_stall = lsu_stall;
-assign ex_stall = mem_stall;
+assign ex_stall = mem_stall | alu_stall;
 assign id_stall = ex_stall;
 assign if_stall = id_stall | id_bubble;
 

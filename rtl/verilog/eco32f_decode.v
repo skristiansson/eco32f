@@ -76,6 +76,8 @@ module eco32f_decode #(
 	output reg 	  ex_op_j,
 	output reg 	  ex_op_jr,
 
+	output reg 	  ex_signed_div,
+
 	output reg 	  ex_lsu_sext,
 	output reg [1:0]  ex_lsu_len,
 
@@ -137,6 +139,7 @@ wire		lsu_sext;
 reg [1:0]	lsu_len;
 wire [31:0]	imm;
 wire [31:0]	br_imm;
+wire		signed_div;
 
 wire		id_bubble;
 
@@ -263,6 +266,11 @@ assign lsu_zext = (op_code == `ECO32F_OP_LDHU)	|
 
 assign lsu_sext = !lsu_zext;
 
+assign signed_div = (op_code == `ECO32F_OP_DIV)		|
+		    (op_code == `ECO32F_OP_DIVI)	|
+		    (op_code == `ECO32F_OP_REM)		|
+		    (op_code == `ECO32F_OP_REM);
+
 always @(*)
 	case (op_code)
 	`ECO32F_OP_STB,
@@ -344,6 +352,8 @@ always @(posedge clk)
 
 		ex_lsu_sext <= lsu_sext;
 		ex_lsu_len <= lsu_len;
+
+		ex_signed_div <= signed_div;
 
 		ex_exc_ibus_fault <= id_exc_ibus_fault;
 		ex_imm_sel <= !op_rrr & !op_rrb;

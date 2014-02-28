@@ -28,14 +28,19 @@ module eco32f_alu #(
 	input 		  rst,
 	input 		  clk,
 
+	input 		  id_stall,
 	input 		  ex_stall,
 	input 		  mem_stall,
+
+	output 		  alu_stall,
 
 	input [31:0] 	  id_pc,
 
 	input 		  ex_op_add,
 	input 		  ex_op_sub,
 	input 		  ex_op_mul,
+	input 		  ex_op_div,
+	input 		  ex_op_rem,
 	input 		  ex_op_or,
 	input 		  ex_op_and,
 	input 		  ex_op_xor,
@@ -56,6 +61,8 @@ module eco32f_alu #(
 	input 		  ex_op_jal,
 
 	input 		  ex_op_rrb,
+
+	input 		  ex_signed_div,
 
 	input [31:0] 	  ex_rf_x,
 	input [31:0] 	  ex_rf_y,
@@ -85,9 +92,13 @@ wire [31:0]	and_result;
 wire [31:0]	slr_result;
 wire [31:0]	sll_result;
 wire [31:0]	sar_result;
+wire [31:0]	div_result;
+wire [31:0]	rem_result;
 wire		x_eq_y;
 wire		x_lts_y;
 wire		x_ltu_y;
+
+wire		div_stall;
 
 assign x = ex_rf_x;
 assign y = ex_imm_sel ? ex_imm : ex_rf_y;
@@ -125,15 +136,82 @@ assign ex_alu_result = ex_op_or ? or_result :
 		       ex_op_sll ? sll_result :
 		       ex_op_slr ? slr_result :
 		       ex_op_sar ? sar_result :
+		       ex_op_div ? div_result :
+		       ex_op_rem ? rem_result :
 		       ex_op_jal ? id_pc :
 		       add_result;
 
 assign ex_add_result = add_result;
 
+assign alu_stall = div_stall;
+
 always @(posedge clk)
 	if (!ex_stall) begin
 		mem_alu_result <= ex_alu_result;
 	end
+
+//
+// Serial divider
+// Handles div* and rem* instructions
+//
+reg [5:0]	div_cnt;
+reg [31:0]	div_n;
+reg [31:0]	div_d;
+reg [31:0]	div_r;
+reg [32:0]	div_sub;
+reg		div_neg;
+reg		div_load;
+reg		div_in_progress;
+reg		div_by_zero;
+
+assign div_stall = div_in_progress | (ex_op_div | ex_op_rem) & div_load;
+
+assign div_result = div_neg ? ~div_n + 1 : div_n;
+assign rem_result = div_neg ? ~div_r + 1 : div_r;
+
+always @(posedge clk)
+	div_load <= !id_stall;
+
+// Serial division is performed in 32 clock cycles (1 per bit).
+always @(posedge clk)
+	if (div_load)
+		div_cnt <= 32;
+	else if (div_cnt != 0)
+		div_cnt <= div_cnt - 1;
+
+assign div_sub = {div_r[30:0], div_n[31]} - div_d;
+
+always @(posedge clk) begin
+	if (div_load) begin
+		div_in_progress <= ex_op_div | ex_op_rem;
+		div_n <= x;
+		div_d <= y;
+		div_r <= 0;
+		div_neg <= 0;
+		div_by_zero <= ex_op_div & (y == 0);
+
+		// Perform unsigned division on converted operands.
+		if (ex_signed_div) begin
+			if (x[31] ^ y[31])
+				div_neg <= 1;
+			if (x[31])
+				div_n <= ~x + 1;
+			if (y[31])
+				div_d <= ~y + 1;
+		end
+	end else if (div_in_progress) begin
+		if (!div_sub[32]) begin // div_sub >= 0
+			div_r <= div_sub[31:0];
+			div_n <= {div_n[30:0], 1'b1};
+		end else begin // div_sub < 0
+		        div_r <= {div_r[30:0], div_n[31]};
+			div_n <= {div_n[30:0], 1'b0};
+		end
+		if (div_cnt == 1)
+			div_in_progress <= 0;
+	end
+end
+
 //
 // Pipelined multiplier.
 // Result is ready in wb stage.

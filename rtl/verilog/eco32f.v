@@ -66,6 +66,7 @@ module eco32f #(
 
 /*AUTOWIRE*/
 // Beginning of automatic wires (for undeclared instantiated-module outputs)
+wire			alu_stall;		// From eco32f_alu of eco32f_alu.v
 wire [31:0]		branch_pc;		// From eco32f_ctrl of eco32f_ctrl.v
 wire			do_branch;		// From eco32f_ctrl of eco32f_ctrl.v
 wire			do_exception;		// From eco32f_ctrl of eco32f_ctrl.v
@@ -122,6 +123,7 @@ wire [31:0]		ex_rf_x;		// From eco32f_registerfile of eco32f_registerfile.v
 wire [4:0]		ex_rf_x_addr;		// From eco32f_decode of eco32f_decode.v
 wire [31:0]		ex_rf_y;		// From eco32f_registerfile of eco32f_registerfile.v
 wire [4:0]		ex_rf_y_addr;		// From eco32f_decode of eco32f_decode.v
+wire			ex_signed_div;		// From eco32f_decode of eco32f_decode.v
 wire			ex_stall;		// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		exception_pc;		// From eco32f_ctrl of eco32f_ctrl.v
 wire			id_bubble;		// From eco32f_decode of eco32f_decode.v
@@ -243,6 +245,7 @@ eco32f_decode
 	.ex_op_jal			(ex_op_jal),
 	.ex_op_j			(ex_op_j),
 	.ex_op_jr			(ex_op_jr),
+	.ex_signed_div			(ex_signed_div),
 	.ex_lsu_sext			(ex_lsu_sext),
 	.ex_lsu_len			(ex_lsu_len[1:0]),
 	.ex_branch_imm			(ex_branch_imm[31:0]),
@@ -293,6 +296,7 @@ eco32f_alu #(
 eco32f_alu
        (/*AUTOINST*/
 	// Outputs
+	.alu_stall			(alu_stall),
 	.ex_add_result			(ex_add_result[31:0]),
 	.ex_cond_true			(ex_cond_true),
 	.ex_alu_result			(ex_alu_result[31:0]),
@@ -302,12 +306,15 @@ eco32f_alu
 	// Inputs
 	.rst				(rst),
 	.clk				(clk),
+	.id_stall			(id_stall),
 	.ex_stall			(ex_stall),
 	.mem_stall			(mem_stall),
 	.id_pc				(id_pc[31:0]),
 	.ex_op_add			(ex_op_add),
 	.ex_op_sub			(ex_op_sub),
 	.ex_op_mul			(ex_op_mul),
+	.ex_op_div			(ex_op_div),
+	.ex_op_rem			(ex_op_rem),
 	.ex_op_or			(ex_op_or),
 	.ex_op_and			(ex_op_and),
 	.ex_op_xor			(ex_op_xor),
@@ -327,6 +334,7 @@ eco32f_alu
 	.ex_op_bgtu			(ex_op_bgtu),
 	.ex_op_jal			(ex_op_jal),
 	.ex_op_rrb			(ex_op_rrb),
+	.ex_signed_div			(ex_signed_div),
 	.ex_rf_x			(ex_rf_x[31:0]),
 	.ex_rf_y			(ex_rf_y[31:0]),
 	.ex_imm				(ex_imm[31:0]),
@@ -397,6 +405,7 @@ eco32f_ctrl
 	.rst				(rst),
 	.clk				(clk),
 	.id_bubble			(id_bubble),
+	.alu_stall			(alu_stall),
 	.lsu_stall			(lsu_stall),
 	.ex_rf_x			(ex_rf_x[31:0]),
 	.ex_branch_imm			(ex_branch_imm[31:0]),
