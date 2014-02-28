@@ -152,6 +152,7 @@ wire			mem_exc_dtlb_umiss;	// From eco32f_lsu of eco32f_lsu.v
 wire			mem_flush;		// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		mem_lsu_result;		// From eco32f_lsu of eco32f_lsu.v
 wire			mem_op_load;		// From eco32f_lsu of eco32f_lsu.v
+wire			mem_op_mul;		// From eco32f_alu of eco32f_alu.v
 wire			mem_op_store;		// From eco32f_lsu of eco32f_lsu.v
 wire [4:0]		mem_rf_r_addr;		// From eco32f_registerfile of eco32f_registerfile.v
 wire			mem_rf_r_we;		// From eco32f_registerfile of eco32f_registerfile.v
@@ -267,7 +268,9 @@ eco32f_decode
 	.id_stall			(id_stall),
 	.id_pc				(id_pc[31:0]),
 	.id_insn			(id_insn[31:0]),
-	.id_exc_ibus_fault		(id_exc_ibus_fault));
+	.id_exc_ibus_fault		(id_exc_ibus_fault),
+	.mem_rf_r_addr			(mem_rf_r_addr[4:0]),
+	.mem_op_mul			(mem_op_mul));
 
 eco32f_registerfile #(
 )
@@ -304,6 +307,7 @@ eco32f_alu
 	.ex_cond_true			(ex_cond_true),
 	.ex_alu_result			(ex_alu_result[31:0]),
 	.mem_alu_result			(mem_alu_result[31:0]),
+	.mem_op_mul			(mem_op_mul),
 	.wb_op_mul			(wb_op_mul),
 	.wb_mul_result			(wb_mul_result[31:0]),
 	// Inputs

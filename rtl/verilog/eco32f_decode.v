@@ -39,10 +39,15 @@ module eco32f_decode #(
 	// Exceptions from fetch stage
 	input 		  id_exc_ibus_fault,
 
+	// Register file address and control signals
 	output [4:0] 	  id_rf_x_addr,
 	output [4:0] 	  id_rf_y_addr,
 	output [4:0] 	  id_rf_r_addr,
 	output 		  id_rf_r_we,
+	input [4:0] 	  mem_rf_r_addr,
+
+	// mul instruction in memory stage
+	input 		  mem_op_mul,
 
 	// Registered output to execute stage
 	output reg 	  ex_op_add,
@@ -313,8 +318,10 @@ assign br_imm = op_rrb ? {{14{id_insn[15]}}, id_insn[15:0], 2'h0} :
 // backwards in the pipeline, i.e. when execute stage need a result from memory
 // stage. This is handled by inserting a 'nop bubble' in the pipeline.
 //
-assign id_bubble = ex_op_load & (id_rf_x_addr == ex_rf_r_addr ||
-				 id_rf_y_addr == ex_rf_r_addr);
+assign id_bubble = (ex_op_load | ex_op_mul) & (id_rf_x_addr == ex_rf_r_addr ||
+					       id_rf_y_addr == ex_rf_r_addr) |
+		   mem_op_mul & (id_rf_x_addr == mem_rf_r_addr ||
+				 id_rf_y_addr == mem_rf_r_addr);
 
 // Registered output to execute stage
 always @(posedge clk)

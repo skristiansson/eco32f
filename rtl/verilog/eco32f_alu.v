@@ -76,6 +76,7 @@ module eco32f_alu #(
 
 	output reg [31:0] mem_alu_result,
 
+	output reg 	  mem_op_mul,
 	output reg 	  wb_op_mul,
 	output reg [31:0] wb_mul_result
 );
@@ -218,8 +219,6 @@ end
 //
 reg [31:0] mul_x;
 reg [31:0] mul_y;
-reg mem_op_mul;
-reg wb_op_mul;
 
 always @(posedge clk) begin
 	if (!ex_stall) begin
