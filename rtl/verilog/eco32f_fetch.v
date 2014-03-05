@@ -144,7 +144,7 @@ always @(posedge clk) begin
 
 		IF_CACHE_HIT_CHECK: begin
 			iwbm_adr_o <= itlb_pa;
-			if (cache_miss & !if_flush) begin
+			if (cache_miss & !if_stall & !if_flush) begin
 				refill_valid <= 0;
 				refill_valid_r <= 0;
 				refill_cnt <= 7;
