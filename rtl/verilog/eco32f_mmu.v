@@ -57,14 +57,15 @@ module eco32f_mmu #(
 	output reg [31:0] itlb_pa,
 	output reg 	  itlb_umiss,
 	output reg 	  itlb_kmiss,
-	output reg 	  itlb_fault,
+	output reg 	  itlb_invalid,
 	output reg 	  itlb_priv,
 
 	input [31:0] 	  dtlb_va,
 	output reg [31:0] dtlb_pa,
 	output reg 	  dtlb_umiss,
 	output reg 	  dtlb_kmiss,
-	output reg 	  dtlb_fault,
+	output reg 	  dtlb_invalid,
+	output reg 	  dtlb_write,
 	output reg 	  dtlb_priv,
 	input 		  dtlb_write_access
 );
@@ -142,7 +143,7 @@ always @(posedge clk)
 always @(posedge clk) begin
 	itlb_kmiss <= itlb_miss & !itlb_direct_map & itlb_kaccess;
 	itlb_umiss <= itlb_miss & !itlb_direct_map & !itlb_kaccess;
-	itlb_fault <= !tlb_valid[itlb_index] & !itlb_direct_map;
+	itlb_invalid <= !tlb_valid[itlb_index] & !itlb_direct_map;
 	itlb_priv <= itlb_kaccess & psw[`ECO32F_SPR_PSW_UC];
 end
 
@@ -158,8 +159,8 @@ always @(posedge clk)
 always @(posedge clk) begin
 	dtlb_kmiss <= dtlb_miss & !dtlb_direct_map & dtlb_kaccess;
 	dtlb_umiss <= dtlb_miss & !dtlb_direct_map & !dtlb_kaccess;
-	dtlb_fault <= (!tlb_valid[dtlb_index] |
-		       dtlb_write_access & !tlb_we[dtlb_index]) &
+	dtlb_invalid <= !tlb_valid[dtlb_index] & !dtlb_direct_map;
+	dtlb_write <= dtlb_write_access & !tlb_we[dtlb_index] &
 		      !dtlb_direct_map;
 	dtlb_priv <= dtlb_kaccess & psw[`ECO32F_SPR_PSW_UC];
 end

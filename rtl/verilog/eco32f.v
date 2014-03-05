@@ -70,12 +70,13 @@ wire			alu_stall;		// From eco32f_alu of eco32f_alu.v
 wire [31:0]		branch_pc;		// From eco32f_ctrl of eco32f_ctrl.v
 wire			do_branch;		// From eco32f_ctrl of eco32f_ctrl.v
 wire			do_exception;		// From eco32f_ctrl of eco32f_ctrl.v
-wire			dtlb_fault;		// From eco32f_mmu of eco32f_mmu.v
+wire			dtlb_invalid;		// From eco32f_mmu of eco32f_mmu.v
 wire			dtlb_kmiss;		// From eco32f_mmu of eco32f_mmu.v
 wire [31:0]		dtlb_pa;		// From eco32f_mmu of eco32f_mmu.v
 wire			dtlb_priv;		// From eco32f_mmu of eco32f_mmu.v
 wire			dtlb_umiss;		// From eco32f_mmu of eco32f_mmu.v
 wire [31:0]		dtlb_va;		// From eco32f_lsu of eco32f_lsu.v
+wire			dtlb_write;		// From eco32f_mmu of eco32f_mmu.v
 wire [31:0]		ex_add_result;		// From eco32f_alu of eco32f_alu.v
 wire [31:0]		ex_alu_result;		// From eco32f_alu of eco32f_alu.v
 wire [31:0]		ex_branch_imm;		// From eco32f_decode of eco32f_decode.v
@@ -138,7 +139,7 @@ wire [4:0]		id_rf_y_addr;		// From eco32f_decode of eco32f_decode.v
 wire			id_stall;		// From eco32f_ctrl of eco32f_ctrl.v
 wire			if_flush;		// From eco32f_ctrl of eco32f_ctrl.v
 wire			if_stall;		// From eco32f_ctrl of eco32f_ctrl.v
-wire			itlb_fault;		// From eco32f_mmu of eco32f_mmu.v
+wire			itlb_invalid;		// From eco32f_mmu of eco32f_mmu.v
 wire			itlb_kmiss;		// From eco32f_mmu of eco32f_mmu.v
 wire [31:0]		itlb_pa;		// From eco32f_mmu of eco32f_mmu.v
 wire			itlb_priv;		// From eco32f_mmu of eco32f_mmu.v
@@ -200,7 +201,7 @@ eco32f_fetch
 	.itlb_pa			(itlb_pa[31:0]),
 	.itlb_kmiss			(itlb_kmiss),
 	.itlb_umiss			(itlb_umiss),
-	.itlb_fault			(itlb_fault),
+	.itlb_invalid			(itlb_invalid),
 	.do_exception			(do_exception),
 	.exception_pc			(exception_pc[31:0]),
 	.do_branch			(do_branch),
@@ -359,7 +360,7 @@ eco32f_lsu
 	.mem_lsu_result			(mem_lsu_result[31:0]),
 	.mem_exc_dtlb_umiss		(mem_exc_dtlb_umiss),
 	.mem_exc_dtlb_kmiss		(mem_exc_dtlb_kmiss),
-	.mem_exc_dtlb_fault		(mem_exc_dtlb_fault),
+	.mem_exc_dtlb_invalid		(mem_exc_dtlb_invalid),
 	.dwbm_adr_o			(dwbm_adr_o[31:0]),
 	.dwbm_stb_o			(dwbm_stb_o),
 	.dwbm_cyc_o			(dwbm_cyc_o),
@@ -381,7 +382,8 @@ eco32f_lsu
 	.dtlb_pa			(dtlb_pa[31:0]),
 	.dtlb_umiss			(dtlb_umiss),
 	.dtlb_kmiss			(dtlb_kmiss),
-	.dtlb_fault			(dtlb_fault),
+	.dtlb_invalid			(dtlb_invalid),
+	.dtlb_write			(dtlb_write),
 	.dwbm_err_i			(dwbm_err_i),
 	.dwbm_ack_i			(dwbm_ack_i),
 	.dwbm_dat_i			(dwbm_dat_i[31:0]),
@@ -458,12 +460,13 @@ eco32f_mmu
 	.itlb_pa			(itlb_pa[31:0]),
 	.itlb_umiss			(itlb_umiss),
 	.itlb_kmiss			(itlb_kmiss),
-	.itlb_fault			(itlb_fault),
+	.itlb_invalid			(itlb_invalid),
 	.itlb_priv			(itlb_priv),
 	.dtlb_pa			(dtlb_pa[31:0]),
 	.dtlb_umiss			(dtlb_umiss),
 	.dtlb_kmiss			(dtlb_kmiss),
-	.dtlb_fault			(dtlb_fault),
+	.dtlb_invalid			(dtlb_invalid),
+	.dtlb_write			(dtlb_write),
 	.dtlb_priv			(dtlb_priv),
 	// Inputs
 	.rst				(rst),

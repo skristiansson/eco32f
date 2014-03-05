@@ -51,7 +51,8 @@ module eco32f_lsu #(
 	input [31:0] 	  dtlb_pa,
 	input 		  dtlb_umiss,
 	input 		  dtlb_kmiss,
-	input 		  dtlb_fault,
+	input 		  dtlb_invalid,
+	input 		  dtlb_write,
 
 	output 		  lsu_stall,
 	output reg [31:0] mem_lsu_result,
@@ -59,7 +60,7 @@ module eco32f_lsu #(
 	// Exceptions generated in memory stage
 	output 		  mem_exc_dtlb_umiss,
 	output 		  mem_exc_dtlb_kmiss,
-	output 		  mem_exc_dtlb_fault,
+	output 		  mem_exc_dtlb_invalid,
 
 	// Bus interface (wishbone)
 	output reg [31:0] dwbm_adr_o,
@@ -117,11 +118,13 @@ always @(posedge clk)
 
 assign mem_exc_dtlb_umiss = (mem_op_load | mem_op_store) & dtlb_umiss;
 assign mem_exc_dtlb_kmiss = (mem_op_load | mem_op_store) & dtlb_kmiss;
-assign mem_exc_dtlb_fault = (mem_op_load | mem_op_store) & dtlb_fault;
+assign mem_exc_dtlb_invalid = (mem_op_load | mem_op_store) & dtlb_invalid;
+assign mem_exc_dtlb_write = (mem_op_load | mem_op_store) & dtlb_write;
 
 // SJK DEBUG
 always @(posedge clk)
-	if (mem_exc_dtlb_umiss | mem_exc_dtlb_kmiss | mem_exc_dtlb_fault) begin
+	if (mem_exc_dtlb_umiss | mem_exc_dtlb_kmiss | mem_exc_dtlb_write |
+	    mem_exc_dtlb_invalid) begin
 		$display("dtlb miss/fault!");
 		$finish();
 	end

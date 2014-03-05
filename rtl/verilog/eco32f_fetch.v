@@ -47,7 +47,7 @@ module eco32f_fetch #(
 	input [31:0] 	  itlb_pa,
 	input 		  itlb_kmiss,
 	input 		  itlb_umiss,
-	input 		  itlb_fault,
+	input 		  itlb_invalid,
 
 	input 		  do_exception,
 	input [31:0] 	  exception_pc,
@@ -96,7 +96,7 @@ assign cache_hit = !cache_miss & refill_valid_r[itlb_pa[4:2]];
 
 assign itlb_miss = itlb_kmiss | itlb_umiss;
 assign itlb_va = if_pc;
-assign id_insn = cache_hit & !itlb_miss & !itlb_fault & !do_branch ?
+assign id_insn = cache_hit & !itlb_miss & !itlb_invalid & !do_branch ?
 		 cache_rd_data : `ECO32F_INSN_NOP;
 
 /* PC generation */
