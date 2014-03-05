@@ -96,7 +96,7 @@ assign cache_hit = !cache_miss & refill_valid_r[itlb_pa[4:2]];
 
 assign itlb_miss = itlb_kmiss | itlb_umiss;
 assign itlb_va = if_pc;
-assign id_insn = cache_hit & !itlb_miss & !itlb_invalid & !do_branch ?
+assign id_insn = cache_hit & !itlb_miss & !itlb_invalid & !if_flush ?
 		 cache_rd_data : `ECO32F_INSN_NOP;
 
 /* PC generation */
@@ -115,7 +115,7 @@ always @(*)
 always @(posedge clk)
 	if (rst)
 		id_pc <= RESET_PC;
-	else if (!if_stall)
+	else if (!if_stall | do_exception)
 		id_pc <= if_pc;
 
 // Wrapping burst with a length of 8.
@@ -144,7 +144,7 @@ always @(posedge clk) begin
 
 		IF_CACHE_HIT_CHECK: begin
 			iwbm_adr_o <= itlb_pa;
-			if (cache_miss & !if_stall & !if_flush) begin
+			if (cache_miss & !if_flush) begin
 				refill_valid <= 0;
 				refill_valid_r <= 0;
 				refill_cnt <= 7;

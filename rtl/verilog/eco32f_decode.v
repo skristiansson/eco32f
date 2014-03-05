@@ -31,6 +31,7 @@ module eco32f_decode #(
 	input 		  clk,
 
 	input 		  id_stall,
+	input 		  id_flush,
 	input [31:0] 	  id_pc,
 	input [31:0] 	  id_insn,
 
@@ -75,6 +76,10 @@ module eco32f_decode #(
 	output reg 	  ex_op_bgtu,
 	output reg 	  ex_op_load,
 	output reg 	  ex_op_store,
+	output reg 	  ex_op_mvfs,
+	output reg 	  ex_op_mvts,
+
+	output reg 	  ex_op_rfx,
 
 	output reg 	  ex_op_rrb,
 	output reg 	  ex_op_jal,
@@ -88,7 +93,7 @@ module eco32f_decode #(
 
 	output reg [31:0] ex_branch_imm,
 
-	output reg [31:0] ex_pc,
+	output reg [31:0] ex_pc /* verilator public */,
 
 	output reg 	  ex_exc_ibus_fault,
 
@@ -138,6 +143,10 @@ wire 		op_bgt;
 wire 		op_bgtu;
 wire 		op_load;
 wire 		op_store;
+wire		op_mvfs;
+wire		op_mvts;
+
+wire		op_rfx;
 
 wire		lsu_zext;
 wire		lsu_sext;
@@ -145,7 +154,6 @@ reg [1:0]	lsu_len;
 wire [31:0]	imm;
 wire [31:0]	br_imm;
 wire		signed_div;
-
 wire		id_bubble;
 
 assign op_code = id_insn[31:26];
@@ -266,6 +274,12 @@ assign op_store = (op_code == `ECO32F_OP_STW)	|
 		  (op_code == `ECO32F_OP_STH)	|
 		  (op_code == `ECO32F_OP_STB);
 
+assign op_mvfs = (op_code == `ECO32F_OP_MVFS);
+
+assign op_mvts = (op_code == `ECO32F_OP_MVTS);
+
+assign op_rfx = (op_code == `ECO32F_OP_RFX);
+
 assign lsu_zext = (op_code == `ECO32F_OP_LDHU)	|
 		  (op_code == `ECO32F_OP_LDBU);
 
@@ -297,12 +311,13 @@ always @(*)
 	endcase
 
 // Register file operands
-assign id_rf_x_addr = id_insn[25:21];
+assign id_rf_x_addr = op_rfx ? 5'd30 : id_insn[25:21];
 assign id_rf_y_addr = id_insn[20:16];
 assign id_rf_r_addr = op_rrr ? id_insn[15:11] :
 		      op_jal ? 5'd31 :
 		      id_insn[20:16];
-assign id_rf_r_we = op_rrr | op_rrs | op_rri | op_ldhi | op_load | op_jal;
+assign id_rf_r_we = op_rrr | op_rrs | op_rri | op_ldhi | op_load | op_jal |
+		    op_mvfs;
 
 // Pick out immediate from insn
 assign imm = op_rri ? {16'h0, id_insn[15:0]} : // zero extend
@@ -325,7 +340,7 @@ assign id_bubble = (ex_op_load | ex_op_mul) & (id_rf_x_addr == ex_rf_r_addr ||
 
 // Registered output to execute stage
 always @(posedge clk)
-	if (!id_stall) begin
+	if (!id_stall | id_flush) begin
 		ex_op_add <= op_add;
 		ex_op_sub <= op_sub;
 		ex_op_mul <= op_mul;
@@ -351,6 +366,10 @@ always @(posedge clk)
 		ex_op_bgtu <= op_bgtu;
 		ex_op_load <= op_load;
 		ex_op_store <= op_store;
+		ex_op_mvfs <= op_mvfs;
+		ex_op_mvts <= op_mvts;
+
+		ex_op_rfx <= op_rfx;
 
 		ex_op_rrb <= op_rrb;
 		ex_op_jal <= op_jal;
@@ -376,8 +395,8 @@ always @(posedge clk)
 
 		ex_bubble <= id_bubble;
 
-		// Push out a bubble
-		if (id_bubble) begin
+		// Push out a no-op
+		if (id_flush | id_bubble) begin
 			ex_op_add <= 0;
 			ex_op_sub <= 0;
 			ex_op_mul <= 0;
@@ -403,6 +422,10 @@ always @(posedge clk)
 			ex_op_bgtu <= 0;
 			ex_op_load <= 0;
 			ex_op_store <= 0;
+			ex_op_mvfs <= 0;
+			ex_op_mvts <= 0;
+
+			ex_op_rfx <= 0;
 
 			ex_op_rrb <= 0;
 			ex_op_jal <= 0;

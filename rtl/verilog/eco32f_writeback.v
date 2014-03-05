@@ -28,7 +28,10 @@ module eco32f_writeback #(
 	input 		 rst,
 	input 		 clk,
 
+	input 		 do_exception,
+
 	input 		 mem_stall,
+	input [31:0] 	 mem_pc,
 	input [31:0] 	 mem_alu_result,
 	input [31:0] 	 mem_lsu_result,
 	input 		 mem_rf_r_we,
@@ -48,9 +51,19 @@ reg [31:0]	wb_result;
 
 always @(posedge clk)
 	if (!mem_stall) begin
-		wb_result <= mem_op_load ? mem_lsu_result : mem_alu_result;
-		wb_rf_r_we <= mem_rf_r_we;
-		wb_rf_r_addr <= mem_rf_r_addr;
+		if (do_exception)
+			wb_result <= mem_pc;
+		else if (mem_op_load)
+			wb_result <= mem_lsu_result;
+		else
+			wb_result <= mem_alu_result;
+
+		if (do_exception)
+			wb_rf_r_addr <= 5'd30;
+		else
+			wb_rf_r_addr <= mem_rf_r_addr;
+
+		wb_rf_r_we <= mem_rf_r_we | do_exception;
 	end
 
 assign wb_rf_r = wb_op_mul ? wb_mul_result : wb_result;

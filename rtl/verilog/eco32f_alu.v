@@ -74,8 +74,6 @@ module eco32f_alu #(
 	output 		  ex_cond_true,
 	output [31:0] 	  ex_alu_result,
 
-	output reg [31:0] mem_alu_result,
-
 	output reg 	  mem_op_mul,
 	output reg 	  wb_op_mul,
 	output reg [31:0] wb_mul_result
@@ -145,11 +143,6 @@ assign ex_alu_result = ex_op_or ? or_result :
 assign ex_add_result = add_result;
 
 assign alu_stall = div_stall;
-
-always @(posedge clk)
-	if (!ex_stall) begin
-		mem_alu_result <= ex_alu_result;
-	end
 
 //
 // Serial divider

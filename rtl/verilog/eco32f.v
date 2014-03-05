@@ -107,8 +107,11 @@ wire			ex_op_jr;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_ldhi;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_load;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_mul;		// From eco32f_decode of eco32f_decode.v
+wire			ex_op_mvfs;		// From eco32f_decode of eco32f_decode.v
+wire			ex_op_mvts;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_or;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_rem;		// From eco32f_decode of eco32f_decode.v
+wire			ex_op_rfx;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_rrb;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_sar;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_sll;		// From eco32f_decode of eco32f_decode.v
@@ -117,7 +120,7 @@ wire			ex_op_store;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_sub;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_xnor;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_xor;		// From eco32f_decode of eco32f_decode.v
-wire [31:0]		ex_pc  /* verilator public */;			// From eco32f_decode of eco32f_decode.v
+wire [31:0]		ex_pc;			// From eco32f_decode of eco32f_decode.v
 wire [4:0]		ex_rf_r_addr;		// From eco32f_decode of eco32f_decode.v
 wire			ex_rf_r_we;		// From eco32f_decode of eco32f_decode.v
 wire [31:0]		ex_rf_x;		// From eco32f_registerfile of eco32f_registerfile.v
@@ -146,8 +149,8 @@ wire			itlb_priv;		// From eco32f_mmu of eco32f_mmu.v
 wire			itlb_umiss;		// From eco32f_mmu of eco32f_mmu.v
 wire [31:0]		itlb_va;		// From eco32f_fetch of eco32f_fetch.v
 wire			lsu_stall;		// From eco32f_lsu of eco32f_lsu.v
-wire [31:0]		mem_alu_result;		// From eco32f_alu of eco32f_alu.v
-wire			mem_exc_dtlb_fault;	// From eco32f_lsu of eco32f_lsu.v
+wire [31:0]		mem_alu_result;		// From eco32f_ctrl of eco32f_ctrl.v
+wire			mem_exc_dtlb_invalid;	// From eco32f_lsu of eco32f_lsu.v
 wire			mem_exc_dtlb_kmiss;	// From eco32f_lsu of eco32f_lsu.v
 wire			mem_exc_dtlb_umiss;	// From eco32f_lsu of eco32f_lsu.v
 wire			mem_flush;		// From eco32f_ctrl of eco32f_ctrl.v
@@ -155,6 +158,7 @@ wire [31:0]		mem_lsu_result;		// From eco32f_lsu of eco32f_lsu.v
 wire			mem_op_load;		// From eco32f_lsu of eco32f_lsu.v
 wire			mem_op_mul;		// From eco32f_alu of eco32f_alu.v
 wire			mem_op_store;		// From eco32f_lsu of eco32f_lsu.v
+wire [31:0]		mem_pc;			// From eco32f_ctrl of eco32f_ctrl.v
 wire [4:0]		mem_rf_r_addr;		// From eco32f_registerfile of eco32f_registerfile.v
 wire			mem_rf_r_we;		// From eco32f_registerfile of eco32f_registerfile.v
 wire			mem_stall;		// From eco32f_ctrl of eco32f_ctrl.v
@@ -246,6 +250,9 @@ eco32f_decode
 	.ex_op_bgtu			(ex_op_bgtu),
 	.ex_op_load			(ex_op_load),
 	.ex_op_store			(ex_op_store),
+	.ex_op_mvfs			(ex_op_mvfs),
+	.ex_op_mvts			(ex_op_mvts),
+	.ex_op_rfx			(ex_op_rfx),
 	.ex_op_rrb			(ex_op_rrb),
 	.ex_op_jal			(ex_op_jal),
 	.ex_op_j			(ex_op_j),
@@ -267,6 +274,7 @@ eco32f_decode
 	.rst				(rst),
 	.clk				(clk),
 	.id_stall			(id_stall),
+	.id_flush			(id_flush),
 	.id_pc				(id_pc[31:0]),
 	.id_insn			(id_insn[31:0]),
 	.id_exc_ibus_fault		(id_exc_ibus_fault),
@@ -307,7 +315,6 @@ eco32f_alu
 	.ex_add_result			(ex_add_result[31:0]),
 	.ex_cond_true			(ex_cond_true),
 	.ex_alu_result			(ex_alu_result[31:0]),
-	.mem_alu_result			(mem_alu_result[31:0]),
 	.mem_op_mul			(mem_op_mul),
 	.wb_op_mul			(wb_op_mul),
 	.wb_mul_result			(wb_mul_result[31:0]),
@@ -404,6 +411,8 @@ eco32f_ctrl
 	.mem_flush			(mem_flush),
 	.do_branch			(do_branch),
 	.branch_pc			(branch_pc[31:0]),
+	.mem_pc				(mem_pc[31:0]),
+	.mem_alu_result			(mem_alu_result[31:0]),
 	.psw				(psw[31:0]),
 	.tlb_index			(tlb_index[31:0]),
 	.tlb_entry_hi_wr_data		(tlb_entry_hi_wr_data[31:0]),
@@ -419,8 +428,15 @@ eco32f_ctrl
 	.id_bubble			(id_bubble),
 	.alu_stall			(alu_stall),
 	.lsu_stall			(lsu_stall),
+	.ex_pc				(ex_pc[31:0]),
+	.ex_alu_result			(ex_alu_result[31:0]),
 	.ex_rf_x			(ex_rf_x[31:0]),
+	.ex_rf_y			(ex_rf_y[31:0]),
+	.ex_imm				(ex_imm[31:0]),
 	.ex_branch_imm			(ex_branch_imm[31:0]),
+	.ex_op_mvfs			(ex_op_mvfs),
+	.ex_op_mvts			(ex_op_mvts),
+	.ex_op_rfx			(ex_op_rfx),
 	.ex_op_rrb			(ex_op_rrb),
 	.ex_op_j			(ex_op_j),
 	.ex_op_jr			(ex_op_jr),
@@ -428,7 +444,19 @@ eco32f_ctrl
 	.tlb_entry_hi_rd_data		(tlb_entry_hi_rd_data[31:0]),
 	.tlb_entry_lo_rd_data		(tlb_entry_lo_rd_data[31:0]),
 	.irq				(irq[15:0]),
-	.ex_exc_ibus_fault		(ex_exc_ibus_fault));
+	.ex_exc_ibus_fault		(ex_exc_ibus_fault),
+	.ex_exc_illegal_insn		(ex_exc_illegal_insn),
+	.ex_exc_itlb_kmiss		(ex_exc_itlb_kmiss),
+	.ex_exc_itlb_umiss		(ex_exc_itlb_umiss),
+	.ex_exc_itlb_invalid		(ex_exc_itlb_invalid),
+	.ex_exc_itlb_priv		(ex_exc_itlb_priv),
+	.ex_exc_div_by_zero		(ex_exc_div_by_zero),
+	.ex_exc_trap			(ex_exc_trap),
+	.mem_exc_dtlb_kmiss		(mem_exc_dtlb_kmiss),
+	.mem_exc_dtlb_umiss		(mem_exc_dtlb_umiss),
+	.mem_exc_dtlb_write		(mem_exc_dtlb_write),
+	.mem_exc_dtlb_invalid		(mem_exc_dtlb_invalid),
+	.mem_exc_dtlb_priv		(mem_exc_dtlb_priv));
 
 eco32f_writeback #(
 )
@@ -441,7 +469,9 @@ eco32f_writeback
 	// Inputs
 	.rst				(rst),
 	.clk				(clk),
+	.do_exception			(do_exception),
 	.mem_stall			(mem_stall),
+	.mem_pc				(mem_pc[31:0]),
 	.mem_alu_result			(mem_alu_result[31:0]),
 	.mem_lsu_result			(mem_lsu_result[31:0]),
 	.mem_rf_r_we			(mem_rf_r_we),
