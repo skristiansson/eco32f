@@ -117,6 +117,8 @@ reg		mem_exc_itlb_priv;
 reg 		mem_exc_div_by_zero;
 reg 		mem_exc_trap;
 reg		mem_exc_irq;
+wire		mem_exc_itlb;
+wire		mem_exc_dtlb;
 
 reg [15:0]	mem_masked_irq;
 
@@ -138,7 +140,7 @@ assign branch_pc = (ex_op_jr | ex_op_rfx) ? ex_rf_x : ex_branch_imm;
 
 // Register signals from execute to memory stage
 always @(posedge clk)
-	if (!ex_stall) begin
+	if (!ex_stall | ex_flush) begin
 		mem_exc_ibus_fault <= ex_exc_ibus_fault;
 		mem_exc_illegal_insn <= ex_exc_illegal_insn;
 		mem_exc_itlb_kmiss <= ex_exc_itlb_kmiss;
@@ -156,29 +158,39 @@ always @(posedge clk)
 			mem_alu_result <= ex_spr_result;
 		else
 			mem_alu_result <= ex_alu_result;
+
+		if (ex_flush) begin
+			mem_exc_ibus_fault <= 0;
+			mem_exc_illegal_insn <= 0;
+			mem_exc_itlb_kmiss <= 0;
+			mem_exc_itlb_umiss <= 0;
+			mem_exc_itlb_invalid <= 0;
+			mem_exc_itlb_priv <= 0;
+ 			mem_exc_div_by_zero <= 0;
+ 			mem_exc_trap <= 0;
+			mem_exc_irq <= 0;
+		end
 	end
 
+assign mem_exc_itlb = mem_exc_itlb_kmiss |
+		      mem_exc_itlb_umiss |
+		      mem_exc_itlb_invalid |
+		      mem_exc_itlb_priv;
 
-assign exception = (mem_exc_ibus_fault |
-		    mem_exc_illegal_insn |
-		    mem_exc_itlb_kmiss |
-		    mem_exc_itlb_umiss |
-		    mem_exc_itlb_invalid |
-		    mem_exc_itlb_priv |
- 		    mem_exc_div_by_zero |
-		    mem_exc_trap |
-		    mem_exc_dtlb_kmiss |
-		    mem_exc_dtlb_umiss |
-		    mem_exc_dtlb_write |
-		    mem_exc_dtlb_invalid |
-		    mem_exc_dtlb_priv |
-		    mem_exc_irq) & !mem_stall;
+assign mem_exc_dtlb = mem_exc_dtlb_kmiss |
+		      mem_exc_dtlb_umiss |
+		      mem_exc_dtlb_write |
+		      mem_exc_dtlb_invalid |
+		      mem_exc_dtlb_priv;
 
-reg exception_r;
-always @(posedge clk)
-	exception_r <= exception;
+assign do_exception = (mem_exc_ibus_fault |
+		       mem_exc_illegal_insn |
+		       mem_exc_itlb |
+		       mem_exc_div_by_zero |
+		       mem_exc_trap |
+		       mem_exc_dtlb |
+		       mem_exc_irq) & !mem_stall;
 
-assign do_exception = exception & !exception_r;
 assign exception_pc = ((mem_exc_itlb_umiss | mem_exc_dtlb_umiss) ?
 		       32'h00000008 : 32'h00000004) |
 		      (psw[`ECO32F_SPR_PSW_V] ? 32'hc0000000 : 32'he0000000);
