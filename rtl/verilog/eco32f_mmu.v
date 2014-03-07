@@ -113,9 +113,9 @@ assign tlb_entry_lo_rd_data = {tlb_ppf[tlb_index], 10'h0, tlb_we[tlb_index],
 //
 function [5:0] tlb_search;
 input [19:0] va;
-reg [5:0] i;
+integer i;
 begin
-	tlb_search = 6'b10000;
+	tlb_search = 6'b100000;
 	for (i = 0; i < 32; i = i + 1) begin
 		if (va == tlb_vpf[i])
 			tlb_search = i;
