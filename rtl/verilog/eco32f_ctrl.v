@@ -71,6 +71,8 @@ module eco32f_ctrl #(
 	output 		  do_branch,
 	output [31:0] 	  branch_pc,
 
+	input [31:0] 	  mem_lsu_addr,
+
 	// Registered output from execute stage to memory stage
 	output reg [31:0] mem_pc,
 	output reg [31:0] mem_alu_result,
@@ -325,5 +327,56 @@ always @(posedge clk)
 			psw <= ex_rf_y;
 	end
 
+
+// TLB Index
+always @(posedge clk)
+	if (rst) begin
+		tlb_index <= 0;
+	end else if (!ex_stall) begin
+		if (ex_op_mvts & (ex_imm[15:0] == `ECO32F_SPR_TLB_INDEX))
+			tlb_index <= ex_rf_y;
+	end
+
+// TLB Entry High
+always @(posedge clk)
+	if (rst) begin
+		tlb_entry_hi <= 0;
+	end else if (!mem_stall & do_exception) begin
+		if (mem_exc_dtlb)
+			tlb_entry_hi[31:12] <= mem_lsu_addr[31:12];
+	end else if (!ex_stall) begin
+		if (ex_op_mvts & (ex_imm[15:0] == `ECO32F_SPR_TLB_ENTRY_HI))
+			tlb_entry_hi[31:12] <= ex_rf_y[31:12];
+	end
+
+assign tlb_entry_hi_we = !ex_stall & ex_op_tbwi;
+
+// TLB Entry Low
+always @(posedge clk)
+	if (rst) begin
+		tlb_entry_lo <= 0;
+	end else if (!ex_stall) begin
+		if (ex_op_mvts &
+		    (ex_imm[15:0] == `ECO32F_SPR_TLB_ENTRY_LO)) begin
+			tlb_entry_lo[31:12] <= ex_rf_y[31:12];
+			tlb_entry_lo[1:0] <= ex_rf_y[1:0];
+		end
+	end
+
+assign tlb_entry_lo_we = !ex_stall & ex_op_tbwi;
+
+// TLB Bad Address
+always @(posedge clk)
+	if (rst) begin
+		tlb_bad_address <= 0;
+	end else if (!mem_stall & do_exception) begin
+		if (mem_exc_dtlb) begin
+			tlb_bad_address <= mem_lsu_addr;
+			$display("dtlb exception: bad addr: %x", mem_lsu_addr);
+		end
+	end else if (!ex_stall) begin
+		if (ex_op_mvts & (ex_imm[15:0] == `ECO32F_SPR_TLB_BAD_ADDR))
+			tlb_bad_address <= ex_rf_y;
+	end
 
 endmodule

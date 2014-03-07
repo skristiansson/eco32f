@@ -42,6 +42,7 @@ module eco32f_lsu #(
 
 	output reg 	  mem_op_load,
 	output reg 	  mem_op_store,
+	output reg [31:0] mem_lsu_addr,
 
 	input [31:0] 	  ex_add_result,
 
@@ -102,8 +103,6 @@ wire [31:0]	rd_data;
 
 reg 		mem_lsu_sext;
 reg [1:0]	mem_lsu_len;
-
-reg [31:0]	mem_lsu_addr;
 
 
 // Register signals from execute stage to memory stage

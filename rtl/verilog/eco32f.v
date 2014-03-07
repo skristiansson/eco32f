@@ -154,6 +154,7 @@ wire			mem_exc_dtlb_invalid;	// From eco32f_lsu of eco32f_lsu.v
 wire			mem_exc_dtlb_kmiss;	// From eco32f_lsu of eco32f_lsu.v
 wire			mem_exc_dtlb_umiss;	// From eco32f_lsu of eco32f_lsu.v
 wire			mem_flush;		// From eco32f_ctrl of eco32f_ctrl.v
+wire [31:0]		mem_lsu_addr;		// From eco32f_lsu of eco32f_lsu.v
 wire [31:0]		mem_lsu_result;		// From eco32f_lsu of eco32f_lsu.v
 wire			mem_op_load;		// From eco32f_lsu of eco32f_lsu.v
 wire			mem_op_mul;		// From eco32f_alu of eco32f_alu.v
@@ -363,6 +364,7 @@ eco32f_lsu
 	// Outputs
 	.mem_op_load			(mem_op_load),
 	.mem_op_store			(mem_op_store),
+	.mem_lsu_addr			(mem_lsu_addr[31:0]),
 	.dtlb_va			(dtlb_va[31:0]),
 	.lsu_stall			(lsu_stall),
 	.mem_lsu_result			(mem_lsu_result[31:0]),
@@ -442,6 +444,7 @@ eco32f_ctrl
 	.ex_op_j			(ex_op_j),
 	.ex_op_jr			(ex_op_jr),
 	.ex_cond_true			(ex_cond_true),
+	.mem_lsu_addr			(mem_lsu_addr[31:0]),
 	.tlb_entry_hi_rd_data		(tlb_entry_hi_rd_data[31:0]),
 	.tlb_entry_lo_rd_data		(tlb_entry_lo_rd_data[31:0]),
 	.irq				(irq[15:0]),
