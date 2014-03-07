@@ -128,7 +128,7 @@ assign itlb_kaccess = itlb_va[19];
 assign {itlb_miss, itlb_index} = tlb_search(itlb_va[31:12]);
 
 assign dtlb_direct_map = &dtlb_va[31:30];
-assign dtlb_kaccess = itlb_va[19];
+assign dtlb_kaccess = dtlb_va[19];
 assign {dtlb_miss, dtlb_index} = tlb_search(dtlb_va[31:12]);
 
 // Instruction tlb request handling
