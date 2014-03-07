@@ -296,13 +296,13 @@ always @(posedge clk)
 			psw[`ECO32F_SPR_PSW_EID] <= `ECO32F_EID_DIV_BY_ZERO;
 		if (mem_exc_trap)
 			psw[`ECO32F_SPR_PSW_EID] <= `ECO32F_EID_TRAP;
-		if (mem_exc_itlb_umiss | mem_exc_itlb_kmiss |
-			 mem_exc_dtlb_umiss | mem_exc_dtlb_kmiss)
-			psw[`ECO32F_SPR_PSW_EID] <= `ECO32F_EID_TLB_MISS;
 		if (mem_exc_dtlb_write)
 			psw[`ECO32F_SPR_PSW_EID] <= `ECO32F_EID_TLB_WRITE;
 		if (mem_exc_itlb_invalid | mem_exc_dtlb_invalid)
 			psw[`ECO32F_SPR_PSW_EID] <= `ECO32F_EID_TLB_INVALID;
+		if (mem_exc_itlb_umiss | mem_exc_itlb_kmiss |
+		    mem_exc_dtlb_umiss | mem_exc_dtlb_kmiss)
+			psw[`ECO32F_SPR_PSW_EID] <= `ECO32F_EID_TLB_MISS;
 
 		psw[`ECO32F_SPR_PSW_IC] <= 0;
 		psw[`ECO32F_SPR_PSW_IP] <= psw[`ECO32F_SPR_PSW_IC];
