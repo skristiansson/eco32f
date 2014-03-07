@@ -104,6 +104,7 @@ wire [31:0]	rd_data;
 reg 		mem_lsu_sext;
 reg [1:0]	mem_lsu_len;
 
+wire		lsu_exc;
 
 // Register signals from execute stage to memory stage
 always @(posedge clk)
@@ -120,19 +121,13 @@ assign mem_exc_dtlb_kmiss = (mem_op_load | mem_op_store) & dtlb_kmiss;
 assign mem_exc_dtlb_invalid = (mem_op_load | mem_op_store) & dtlb_invalid;
 assign mem_exc_dtlb_write = (mem_op_load | mem_op_store) & dtlb_write;
 
-// SJK DEBUG
-always @(posedge clk)
-	if (mem_exc_dtlb_umiss | mem_exc_dtlb_kmiss | mem_exc_dtlb_write |
-	    mem_exc_dtlb_invalid) begin
-		$display("dtlb miss/fault!");
-		$finish();
-	end
-
-// SJK DEBUG END
+assign lsu_exc = mem_exc_dtlb_umiss | mem_exc_dtlb_kmiss |
+		 mem_exc_dtlb_invalid | mem_exc_dtlb_write;
 
 assign lsu_stall = (mem_op_load & cache_miss ||
 		   lsu_state != LSU_CACHE_HIT_CHECK) &&
-		   lsu_state != LSU_NONCACHE_READ_DONE;
+		   lsu_state != LSU_NONCACHE_READ_DONE &&
+		   !lsu_exc;
 
 //
 // Mux non-cached read data with cached.
@@ -234,6 +229,9 @@ always @(posedge clk)
 					cache_wr_data <= ex_rf_y;
 				endcase
 			end
+
+			if (lsu_exc)
+				lsu_state <= LSU_CACHE_HIT_CHECK;
 		end
 
 		LSU_CACHE_REFILL: begin
@@ -278,6 +276,14 @@ always @(posedge clk)
 				cache_wr_en <= 1;
 
 			lsu_state <= LSU_WRITE;
+
+			// Abort on exceptions
+			if (lsu_exc) begin
+				dwbm_stb_o <= 0;
+				dwbm_cyc_o <= 0;
+				dwbm_we_o <= 0;
+				lsu_state <= LSU_CACHE_HIT_CHECK;
+			end
 		end
 
 		LSU_WRITE: begin
