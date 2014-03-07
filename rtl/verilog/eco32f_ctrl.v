@@ -78,9 +78,9 @@ module eco32f_ctrl #(
 	// Special Purpose Registers
 	output reg [31:0] psw,
 	output reg [31:0] tlb_index,
-	output [31:0] 	  tlb_entry_hi_wr_data,
+	output reg [31:0] tlb_entry_hi,
 	output 		  tlb_entry_hi_we,
-	output [31:0] 	  tlb_entry_lo_wr_data,
+	output reg [31:0] tlb_entry_lo,
 	output 		  tlb_entry_lo_we,
 	input [31:0] 	  tlb_entry_hi_rd_data,
 	input [31:0] 	  tlb_entry_lo_rd_data,
@@ -217,9 +217,9 @@ always @*
 	`ECO32F_SPR_TLB_INDEX:
 		ex_spr_result = tlb_index;
 	`ECO32F_SPR_TLB_ENTRY_HI:
-		ex_spr_result = tlb_entry_hi_rd_data;
+		ex_spr_result = tlb_entry_hi;
 	`ECO32F_SPR_TLB_ENTRY_LO:
-		ex_spr_result = tlb_entry_lo_rd_data;
+		ex_spr_result = tlb_entry_lo;
 	`ECO32F_SPR_TLB_BAD_ADDR:
 		ex_spr_result = tlb_bad_address;
 	default:

@@ -46,9 +46,9 @@ module eco32f_mmu #(
 
 	// Read/write access to tlbs
 	input [4:0] 	  tlb_index,
-	input [31:0] 	  tlb_entry_hi_wr_data,
+	input [31:0] 	  tlb_entry_hi,
 	input 		  tlb_entry_hi_we,
-	input [31:0] 	  tlb_entry_lo_wr_data,
+	input [31:0] 	  tlb_entry_lo,
 	input 		  tlb_entry_lo_we,
 	output [31:0] 	  tlb_entry_hi_rd_data,
 	output [31:0] 	  tlb_entry_lo_rd_data,
@@ -94,13 +94,13 @@ wire [4:0] 	    dtlb_index;
 //
 always @(posedge clk)
 	if (tlb_entry_hi_we)
-		tlb_vpf[tlb_index] <= tlb_entry_hi_wr_data[31:12];
+		tlb_vpf[tlb_index] <= tlb_entry_hi[31:12];
 
 always @(posedge clk)
 	if (tlb_entry_lo_we) begin
-		tlb_ppf[tlb_index] <= tlb_entry_lo_wr_data[31:12];
-		tlb_we[tlb_index] <= tlb_entry_lo_wr_data[1];
-		tlb_valid[tlb_index] <= tlb_entry_lo_wr_data[0];
+		tlb_ppf[tlb_index] <= tlb_entry_lo[31:12];
+		tlb_we[tlb_index] <= tlb_entry_lo[1];
+		tlb_valid[tlb_index] <= tlb_entry_lo[0];
 	end
 
 assign tlb_entry_hi_rd_data = {tlb_vpf[tlb_index], 12'h0};

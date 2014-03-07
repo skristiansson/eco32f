@@ -164,12 +164,12 @@ wire			mem_rf_r_we;		// From eco32f_registerfile of eco32f_registerfile.v
 wire			mem_stall;		// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		psw;			// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		tlb_bad_address;	// From eco32f_ctrl of eco32f_ctrl.v
+wire [31:0]		tlb_entry_hi;		// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		tlb_entry_hi_rd_data;	// From eco32f_mmu of eco32f_mmu.v
 wire			tlb_entry_hi_we;	// From eco32f_ctrl of eco32f_ctrl.v
-wire [31:0]		tlb_entry_hi_wr_data;	// From eco32f_ctrl of eco32f_ctrl.v
+wire [31:0]		tlb_entry_lo;		// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		tlb_entry_lo_rd_data;	// From eco32f_mmu of eco32f_mmu.v
 wire			tlb_entry_lo_we;	// From eco32f_ctrl of eco32f_ctrl.v
-wire [31:0]		tlb_entry_lo_wr_data;	// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		tlb_index;		// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		wb_mul_result;		// From eco32f_alu of eco32f_alu.v
 wire			wb_op_mul;		// From eco32f_alu of eco32f_alu.v
@@ -415,9 +415,9 @@ eco32f_ctrl
 	.mem_alu_result			(mem_alu_result[31:0]),
 	.psw				(psw[31:0]),
 	.tlb_index			(tlb_index[31:0]),
-	.tlb_entry_hi_wr_data		(tlb_entry_hi_wr_data[31:0]),
+	.tlb_entry_hi			(tlb_entry_hi[31:0]),
 	.tlb_entry_hi_we		(tlb_entry_hi_we),
-	.tlb_entry_lo_wr_data		(tlb_entry_lo_wr_data[31:0]),
+	.tlb_entry_lo			(tlb_entry_lo[31:0]),
 	.tlb_entry_lo_we		(tlb_entry_lo_we),
 	.tlb_bad_address		(tlb_bad_address[31:0]),
 	.do_exception			(do_exception),
@@ -503,9 +503,9 @@ eco32f_mmu
 	.clk				(clk),
 	.psw				(psw[31:0]),
 	.tlb_index			(tlb_index[4:0]),
-	.tlb_entry_hi_wr_data		(tlb_entry_hi_wr_data[31:0]),
+	.tlb_entry_hi			(tlb_entry_hi[31:0]),
 	.tlb_entry_hi_we		(tlb_entry_hi_we),
-	.tlb_entry_lo_wr_data		(tlb_entry_lo_wr_data[31:0]),
+	.tlb_entry_lo			(tlb_entry_lo[31:0]),
 	.tlb_entry_lo_we		(tlb_entry_lo_we),
 	.itlb_va			(itlb_va[31:0]),
 	.dtlb_va			(dtlb_va[31:0]),
