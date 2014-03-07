@@ -295,6 +295,7 @@ eco32f_registerfile
 	.clk				(clk),
 	.id_stall			(id_stall),
 	.ex_stall			(ex_stall),
+	.ex_flush			(ex_flush),
 	.id_rf_x_addr			(id_rf_x_addr[4:0]),
 	.id_rf_y_addr			(id_rf_y_addr[4:0]),
 	.ex_rf_x_addr			(ex_rf_x_addr[4:0]),

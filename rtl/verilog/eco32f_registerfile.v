@@ -30,6 +30,7 @@ module eco32f_registerfile #(
 
 	input 		 id_stall,
 	input 		 ex_stall,
+	input 		 ex_flush,
 
 	input [4:0] 	 id_rf_x_addr,
 	input [4:0] 	 id_rf_y_addr,
@@ -59,9 +60,9 @@ wire	rf_re;
 assign rf_re = !id_stall;
 
 always @(posedge clk)
-	if (!ex_stall) begin
+	if (!ex_stall | ex_flush) begin
 		mem_rf_r_addr <= ex_rf_r_addr;
-		mem_rf_r_we <= ex_rf_r_we;
+		mem_rf_r_we <= ex_rf_r_we & !ex_flush;
 	end
 
 //
