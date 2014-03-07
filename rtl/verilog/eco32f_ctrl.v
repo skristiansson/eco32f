@@ -235,54 +235,14 @@ always @*
 // Find first one
 function [4:0] ff1;
 input [15:0] bits;
-reg [4:0] i;
+integer i;
 begin
+	ff1 = 0;
 	for (i = 15; i >= 0; i = i - 1)
 		if (bits[i])
 			ff1 = i;
 end
 endfunction
-
-//
-// -Verilator- chokes on the function above, so to decode the masked irqs
-// to the EID number, just do it open handed here for the time being.
-//
-reg [5:0] irq_eid;
-always @*
-	if (mem_masked_irq[0])
-		irq_eid = 5'd0;
-	else if (mem_masked_irq[1])
-		irq_eid = 5'd1;
-	else if (mem_masked_irq[2])
-		irq_eid = 5'd2;
-	else if (mem_masked_irq[3])
-		irq_eid = 5'd3;
-	else if (mem_masked_irq[4])
-		irq_eid = 5'd4;
-	else if (mem_masked_irq[5])
-		irq_eid = 5'd5;
-	else if (mem_masked_irq[6])
-		irq_eid = 5'd6;
-	else if (mem_masked_irq[7])
-		irq_eid = 5'd7;
-	else if (mem_masked_irq[8])
-		irq_eid = 5'd8;
-	else if (mem_masked_irq[9])
-		irq_eid = 5'd9;
-	else if (mem_masked_irq[10])
-		irq_eid = 5'd10;
-	else if (mem_masked_irq[11])
-		irq_eid = 5'd11;
-	else if (mem_masked_irq[12])
-		irq_eid = 5'd12;
-	else if (mem_masked_irq[13])
-		irq_eid = 5'd13;
-	else if (mem_masked_irq[14])
-		irq_eid = 5'd14;
-	else if (mem_masked_irq[15])
-		irq_eid = 5'd15;
-	else
-		irq_eid = 5'd0;
 
 // PSW - Processor Status Word
 always @(posedge clk)
@@ -291,7 +251,7 @@ always @(posedge clk)
 	end else if (!mem_stall & do_exception) begin
 		// TODO: order by priority
 		if (mem_exc_irq)
-			psw[`ECO32F_SPR_PSW_EID] <= irq_eid;
+			psw[`ECO32F_SPR_PSW_EID] <= ff1(mem_masked_irq);
 		if (mem_exc_ibus_fault)
 			psw[`ECO32F_SPR_PSW_EID] <= `ECO32F_EID_BUS_TIMEOUT;
 		if (mem_exc_illegal_insn)
