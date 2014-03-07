@@ -59,6 +59,10 @@ module eco32f_ctrl #(
 
 	input 		  ex_op_mvfs,
 	input 		  ex_op_mvts,
+        input 		  ex_op_tbs,
+        input 		  ex_op_tbwr,
+        input 		  ex_op_tbri,
+        input 		  ex_op_tbwi,
 
 	input 		  ex_op_rfx,
 

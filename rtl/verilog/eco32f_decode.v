@@ -78,6 +78,10 @@ module eco32f_decode #(
 	output reg 	  ex_op_store,
 	output reg 	  ex_op_mvfs,
 	output reg 	  ex_op_mvts,
+	output reg 	  ex_op_tbs,
+	output reg 	  ex_op_tbwr,
+	output reg 	  ex_op_tbri,
+	output reg 	  ex_op_tbwi,
 
 	output reg 	  ex_op_rfx,
 
@@ -145,6 +149,10 @@ wire 		op_load;
 wire 		op_store;
 wire		op_mvfs;
 wire		op_mvts;
+wire		op_tbs;
+wire		op_tbwr;
+wire		op_tbri;
+wire		op_tbwi;
 
 wire		op_rfx;
 
@@ -278,6 +286,11 @@ assign op_mvfs = (op_code == `ECO32F_OP_MVFS);
 
 assign op_mvts = (op_code == `ECO32F_OP_MVTS);
 
+assign op_tbs = (op_code == `ECO32F_OP_TBS);
+assign op_tbwr = (op_code == `ECO32F_OP_TBWR);
+assign op_tbri = (op_code == `ECO32F_OP_TBRI);
+assign op_tbwi = (op_code == `ECO32F_OP_TBWI);
+
 assign op_rfx = (op_code == `ECO32F_OP_RFX);
 
 assign lsu_zext = (op_code == `ECO32F_OP_LDHU)	|
@@ -368,6 +381,10 @@ always @(posedge clk)
 		ex_op_store <= op_store;
 		ex_op_mvfs <= op_mvfs;
 		ex_op_mvts <= op_mvts;
+		ex_op_tbs <= op_tbs;
+		ex_op_tbwr <= op_tbwr;
+		ex_op_tbri <= op_tbri;
+		ex_op_tbwi <= op_tbwi;
 
 		ex_op_rfx <= op_rfx;
 
@@ -424,6 +441,10 @@ always @(posedge clk)
 			ex_op_store <= 0;
 			ex_op_mvfs <= 0;
 			ex_op_mvts <= 0;
+ 			ex_op_tbs <= 0;
+			ex_op_tbwr <= 0;
+			ex_op_tbri <= 0;
+ 			ex_op_tbwi <= 0;
 
 			ex_op_rfx <= 0;
 
