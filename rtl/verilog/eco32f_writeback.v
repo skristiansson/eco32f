@@ -50,7 +50,7 @@ module eco32f_writeback #(
 reg [31:0]	wb_result;
 
 always @(posedge clk)
-	if (!mem_stall) begin
+	if (!mem_stall | do_exception) begin
 		if (do_exception)
 			wb_result <= mem_pc;
 		else if (mem_op_load)
