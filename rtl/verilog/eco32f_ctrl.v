@@ -270,7 +270,7 @@ always @(posedge clk)
 		if (mem_exc_illegal_insn)
 			psw[`ECO32F_SPR_PSW_EID] <= `ECO32F_EID_ILLEGAL_INSN;
 		if (mem_exc_itlb_priv | mem_exc_dtlb_priv)
-			psw[`ECO32F_SPR_PSW_EID] <= `ECO32F_EID_PRIVILEGED_INSN;
+			psw[`ECO32F_SPR_PSW_EID] <= `ECO32F_EID_PRIVILEGED_ADDR;
 		if (mem_exc_div_by_zero)
 			psw[`ECO32F_SPR_PSW_EID] <= `ECO32F_EID_DIV_BY_ZERO;
 		if (mem_exc_trap)
