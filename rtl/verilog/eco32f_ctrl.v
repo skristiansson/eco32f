@@ -140,18 +140,18 @@ assign id_stall = ex_stall;
 assign if_stall = id_stall | id_bubble;
 
 // Flush logic
-assign mem_flush = 0;
-assign ex_flush = do_exception;
-assign id_flush = do_exception;
-assign if_flush = do_exception | do_branch;
+assign mem_flush = do_exception;
+assign ex_flush = mem_flush;
+assign id_flush = ex_flush;
+assign if_flush = id_flush | do_branch;
 
 // Branch/jump logic
 assign do_branch = ex_op_j | ex_op_jr | ex_op_rfx | ex_op_rrb & ex_cond_true;
 assign branch_pc = (ex_op_jr | ex_op_rfx) ? ex_rf_x : ex_branch_imm;
 
 // Register signals from execute to memory stage
-always @(posedge clk)
-	if (!ex_stall | ex_flush) begin
+always @(posedge clk) begin
+	if (!ex_stall) begin
 		mem_exc_ibus_fault <= ex_exc_ibus_fault;
 		mem_exc_illegal_insn <= ex_exc_illegal_insn;
 		mem_exc_itlb_kmiss <= ex_exc_itlb_kmiss;
@@ -177,19 +177,20 @@ always @(posedge clk)
 			mem_alu_result <= ex_spr_result;
 		else
 			mem_alu_result <= ex_alu_result;
-
-		if (ex_flush) begin
-			mem_exc_ibus_fault <= 0;
-			mem_exc_illegal_insn <= 0;
-			mem_exc_itlb_kmiss <= 0;
-			mem_exc_itlb_umiss <= 0;
-			mem_exc_itlb_invalid <= 0;
-			mem_exc_itlb_priv <= 0;
- 			mem_exc_div_by_zero <= 0;
- 			mem_exc_trap <= 0;
-			mem_exc_irq <= 0;
-		end
 	end
+
+	if (ex_flush) begin
+		mem_exc_ibus_fault <= 0;
+		mem_exc_illegal_insn <= 0;
+		mem_exc_itlb_kmiss <= 0;
+		mem_exc_itlb_umiss <= 0;
+		mem_exc_itlb_invalid <= 0;
+		mem_exc_itlb_priv <= 0;
+ 		mem_exc_div_by_zero <= 0;
+ 		mem_exc_trap <= 0;
+		mem_exc_irq <= 0;
+	end
+end
 
 assign mem_exc_itlb = mem_exc_itlb_kmiss |
 		      mem_exc_itlb_umiss |
