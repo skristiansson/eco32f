@@ -186,8 +186,11 @@ always @(posedge clk) begin
 
 		// Perform unsigned division on converted operands.
 		if (ex_signed_div) begin
-			if (x[31] ^ y[31])
-				div_neg <= 1;
+			if (ex_op_div)
+				div_neg <= x[31] ^ y[31];
+			else
+				div_neg <= x[31];
+
 			if (x[31])
 				div_n <= ~x + 1;
 			if (y[31])
