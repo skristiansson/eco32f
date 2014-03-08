@@ -59,11 +59,15 @@ wire	rf_re;
 
 assign rf_re = !id_stall;
 
-always @(posedge clk)
-	if (!ex_stall | ex_flush) begin
+always @(posedge clk) begin
+	if (!ex_stall) begin
 		mem_rf_r_addr <= ex_rf_r_addr;
-		mem_rf_r_we <= ex_rf_r_we & !ex_flush;
+		mem_rf_r_we <= ex_rf_r_we;
 	end
+
+	if (ex_flush)
+		mem_rf_r_we <= 0;
+end
 
 //
 // RAW (Read After Write) Hazard handling
