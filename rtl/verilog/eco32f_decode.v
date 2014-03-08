@@ -39,6 +39,10 @@ module eco32f_decode #(
 
 	// Exceptions from fetch stage
 	input 		  id_exc_ibus_fault,
+	input 		  id_exc_itlb_kmiss,
+	input 		  id_exc_itlb_umiss,
+	input 		  id_exc_itlb_invalid,
+	input 		  id_exc_itlb_priv,
 
 	// Register file address and control signals
 	output [4:0] 	  id_rf_x_addr,
@@ -100,6 +104,10 @@ module eco32f_decode #(
 	output reg [31:0] ex_pc /* verilator public */,
 
 	output reg 	  ex_exc_ibus_fault,
+	output reg 	  ex_exc_itlb_kmiss,
+	output reg 	  ex_exc_itlb_umiss,
+	output reg 	  ex_exc_itlb_invalid,
+	output reg 	  ex_exc_itlb_priv,
 
 	output reg [4:0]  ex_rf_x_addr,
 	output reg [4:0]  ex_rf_y_addr,
@@ -399,6 +407,11 @@ always @(posedge clk)
 		ex_signed_div <= signed_div;
 
 		ex_exc_ibus_fault <= id_exc_ibus_fault;
+		ex_exc_itlb_kmiss <= id_exc_itlb_kmiss;
+		ex_exc_itlb_umiss <= id_exc_itlb_umiss;
+		ex_exc_itlb_invalid <= id_exc_itlb_invalid;
+		ex_exc_itlb_priv <= id_exc_itlb_priv;
+
 		ex_imm_sel <= !op_rrr & !op_rrb;
 		ex_imm <= imm;
 		ex_branch_imm <= br_imm + id_pc + 4;
@@ -455,6 +468,13 @@ always @(posedge clk)
 
 			ex_rf_r_addr <= 0;
 			ex_rf_r_we <= 0;
+
+			ex_exc_ibus_fault <= 0;
+			ex_exc_itlb_kmiss <= 0;
+			ex_exc_itlb_umiss <= 0;
+			ex_exc_itlb_invalid <= 0;
+			ex_exc_itlb_priv <= 0;
+
 		end
 	end
 

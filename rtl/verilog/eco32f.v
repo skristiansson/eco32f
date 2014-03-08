@@ -83,6 +83,10 @@ wire [31:0]		ex_branch_imm;		// From eco32f_decode of eco32f_decode.v
 wire			ex_bubble;		// From eco32f_decode of eco32f_decode.v
 wire			ex_cond_true;		// From eco32f_alu of eco32f_alu.v
 wire			ex_exc_ibus_fault;	// From eco32f_decode of eco32f_decode.v
+wire			ex_exc_itlb_invalid;	// From eco32f_decode of eco32f_decode.v
+wire			ex_exc_itlb_kmiss;	// From eco32f_decode of eco32f_decode.v
+wire			ex_exc_itlb_priv;	// From eco32f_decode of eco32f_decode.v
+wire			ex_exc_itlb_umiss;	// From eco32f_decode of eco32f_decode.v
 wire			ex_flush;		// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		ex_imm;			// From eco32f_decode of eco32f_decode.v
 wire			ex_imm_sel;		// From eco32f_decode of eco32f_decode.v
@@ -136,6 +140,10 @@ wire			ex_stall;		// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		exception_pc;		// From eco32f_ctrl of eco32f_ctrl.v
 wire			id_bubble;		// From eco32f_decode of eco32f_decode.v
 wire			id_exc_ibus_fault;	// From eco32f_fetch of eco32f_fetch.v
+wire			id_exc_itlb_invalid;	// From eco32f_fetch of eco32f_fetch.v
+wire			id_exc_itlb_kmiss;	// From eco32f_fetch of eco32f_fetch.v
+wire			id_exc_itlb_priv;	// From eco32f_fetch of eco32f_fetch.v
+wire			id_exc_itlb_umiss;	// From eco32f_fetch of eco32f_fetch.v
 wire			id_flush;		// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		id_insn;		// From eco32f_fetch of eco32f_fetch.v
 wire [31:0]		id_pc;			// From eco32f_fetch of eco32f_fetch.v
@@ -193,6 +201,10 @@ eco32f_fetch
 	.id_pc				(id_pc[31:0]),
 	.id_insn			(id_insn[31:0]),
 	.id_exc_ibus_fault		(id_exc_ibus_fault),
+	.id_exc_itlb_kmiss		(id_exc_itlb_kmiss),
+	.id_exc_itlb_umiss		(id_exc_itlb_umiss),
+	.id_exc_itlb_invalid		(id_exc_itlb_invalid),
+	.id_exc_itlb_priv		(id_exc_itlb_priv),
 	.itlb_va			(itlb_va[31:0]),
 	.iwbm_adr_o			(iwbm_adr_o[31:0]),
 	.iwbm_stb_o			(iwbm_stb_o),
@@ -211,6 +223,7 @@ eco32f_fetch
 	.itlb_kmiss			(itlb_kmiss),
 	.itlb_umiss			(itlb_umiss),
 	.itlb_invalid			(itlb_invalid),
+	.itlb_priv			(itlb_priv),
 	.do_exception			(do_exception),
 	.exception_pc			(exception_pc[31:0]),
 	.do_branch			(do_branch),
@@ -272,6 +285,10 @@ eco32f_decode
 	.ex_branch_imm			(ex_branch_imm[31:0]),
 	.ex_pc				(ex_pc[31:0]),
 	.ex_exc_ibus_fault		(ex_exc_ibus_fault),
+	.ex_exc_itlb_kmiss		(ex_exc_itlb_kmiss),
+	.ex_exc_itlb_umiss		(ex_exc_itlb_umiss),
+	.ex_exc_itlb_invalid		(ex_exc_itlb_invalid),
+	.ex_exc_itlb_priv		(ex_exc_itlb_priv),
 	.ex_rf_x_addr			(ex_rf_x_addr[4:0]),
 	.ex_rf_y_addr			(ex_rf_y_addr[4:0]),
 	.ex_rf_r_addr			(ex_rf_r_addr[4:0]),
@@ -287,6 +304,10 @@ eco32f_decode
 	.id_pc				(id_pc[31:0]),
 	.id_insn			(id_insn[31:0]),
 	.id_exc_ibus_fault		(id_exc_ibus_fault),
+	.id_exc_itlb_kmiss		(id_exc_itlb_kmiss),
+	.id_exc_itlb_umiss		(id_exc_itlb_umiss),
+	.id_exc_itlb_invalid		(id_exc_itlb_invalid),
+	.id_exc_itlb_priv		(id_exc_itlb_priv),
 	.mem_rf_r_addr			(mem_rf_r_addr[4:0]),
 	.mem_op_mul			(mem_op_mul));
 

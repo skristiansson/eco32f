@@ -42,12 +42,17 @@ module eco32f_fetch #(
 	output [31:0] 	  id_insn,
 
 	output 		  id_exc_ibus_fault,
+	output 		  id_exc_itlb_kmiss,
+	output 		  id_exc_itlb_umiss,
+	output 		  id_exc_itlb_invalid,
+	output 		  id_exc_itlb_priv,
 
 	output [31:0] 	  itlb_va,
 	input [31:0] 	  itlb_pa,
 	input 		  itlb_kmiss,
 	input 		  itlb_umiss,
 	input 		  itlb_invalid,
+	input 		  itlb_priv,
 
 	input 		  do_exception,
 	input [31:0] 	  exception_pc,
@@ -77,7 +82,9 @@ localparam [2:0]
 reg [2:0]	if_state;
 reg [31:0]	if_pc;
 
-wire		itlb_miss;
+wire		id_exc;
+
+reg		ibus_fault;
 
 reg [2:0]	refill_cnt;
 reg [7:0]	refill_valid;
@@ -94,9 +101,8 @@ reg		cache_wr_en;
 // using the refill_valid_r signals.
 assign cache_hit = !cache_miss & refill_valid_r[itlb_pa[4:2]];
 
-assign itlb_miss = itlb_kmiss | itlb_umiss;
 assign itlb_va = if_pc;
-assign id_insn = cache_hit & !itlb_miss & !itlb_invalid & !if_flush ?
+assign id_insn = cache_hit & !id_exc & !if_flush ?
 		 cache_rd_data : `ECO32F_INSN_NOP;
 
 /* PC generation */
@@ -117,6 +123,25 @@ always @(posedge clk)
 		id_pc <= RESET_PC;
 	else if (!if_stall | do_exception)
 		id_pc <= if_pc;
+
+always @(posedge clk)
+	if (rst | if_flush)
+		ibus_fault <= 0;
+	else
+		ibus_fault <= iwbm_err_i;
+
+// Exceptions
+assign id_exc_itlb_kmiss = itlb_kmiss & !if_flush;
+assign id_exc_itlb_umiss = itlb_umiss & !if_flush;
+assign id_exc_itlb_invalid = itlb_invalid & !if_flush;
+assign id_exc_itlb_priv = itlb_priv & !if_flush;
+assign id_exc_ibus_fault = ibus_fault & !if_flush;
+
+assign id_exc = id_exc_itlb_kmiss |
+		id_exc_itlb_umiss |
+		id_exc_itlb_invalid |
+		id_exc_itlb_priv |
+		id_exc_ibus_fault;
 
 // Wrapping burst with a length of 8.
 assign iwbm_bte_o = 2'b10;
@@ -144,7 +169,7 @@ always @(posedge clk) begin
 
 		IF_CACHE_HIT_CHECK: begin
 			iwbm_adr_o <= itlb_pa;
-			if (cache_miss & !if_flush) begin
+			if (cache_miss & !if_flush & !id_exc) begin
 				refill_valid <= 0;
 				refill_valid_r <= 0;
 				refill_cnt <= 7;
@@ -169,6 +194,13 @@ always @(posedge clk) begin
 				end
 				refill_cnt <= refill_cnt - 1;
 			end
+
+			if (iwbm_err_i) begin
+				if_state <= IF_START_CACHE_HIT_CHECK;
+				iwbm_stb_o <= 0;
+				iwbm_cyc_o <= 0;
+			end
+
 		end
 		endcase
 	end
