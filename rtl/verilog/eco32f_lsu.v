@@ -133,7 +133,7 @@ assign mem_exc_dtlb_priv = (mem_op_load | mem_op_store) & dtlb_priv;
 assign mem_exc_dtlb_write = (mem_op_load | mem_op_store) & dtlb_write;
 
 assign lsu_exc = mem_exc_dtlb_umiss | mem_exc_dtlb_kmiss |
-		 mem_exc_dtlb_invalid | mem_exc_dtlb_write;
+		 mem_exc_dtlb_invalid | mem_exc_dtlb_priv | mem_exc_dtlb_write;
 
 assign lsu_stall = (mem_op_load & cache_miss ||
 		   lsu_state != LSU_CACHE_HIT_CHECK) &&
