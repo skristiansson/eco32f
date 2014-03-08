@@ -85,7 +85,7 @@ module eco32f_ctrl #(
 
 	// Special Purpose Registers
 	output reg [31:0] psw,
-	output reg [31:0] tlb_index,
+	output [4:0] 	  tlb_index,
 	output reg [31:0] tlb_entry_hi,
 	output 		  tlb_entry_hi_we,
 	output reg [31:0] tlb_entry_lo,
@@ -128,6 +128,8 @@ wire		mem_exc_itlb;
 wire		mem_exc_dtlb;
 
 reg [15:0]	mem_masked_irq;
+
+reg [31:0]	tlb_index_spr;
 
 // Stall logic - a stall in a later stage stalls the earlier stages
 assign mem_stall = lsu_stall;
@@ -222,7 +224,7 @@ always @*
 	`ECO32F_SPR_PSW:
 		ex_spr_result = psw;
 	`ECO32F_SPR_TLB_INDEX:
-		ex_spr_result = tlb_index;
+		ex_spr_result = tlb_index_spr;
 	`ECO32F_SPR_TLB_ENTRY_HI:
 		ex_spr_result = tlb_entry_hi;
 	`ECO32F_SPR_TLB_ENTRY_LO:
@@ -296,11 +298,23 @@ always @(posedge clk)
 // TLB Index
 always @(posedge clk)
 	if (rst) begin
-		tlb_index <= 0;
+		tlb_index_spr <= 0;
 	end else if (!ex_stall) begin
 		if (ex_op_mvts & (ex_imm[15:0] == `ECO32F_SPR_TLB_INDEX))
-			tlb_index <= ex_rf_y;
+			tlb_index_spr <= ex_rf_y;
 	end
+
+// Random index generation
+reg [15:0]	lfsr;
+always @(posedge clk)
+	if (rst)
+		lfsr <= 16'hace1;
+	else
+		lfsr <= {lfsr[14:0],
+			 ~(lfsr[14]^lfsr[6]^lfsr[4]^lfsr[1]^lfsr[0])};
+
+// FIXME: skip the fixed entries (0-3) for tbwr
+assign tlb_index = ex_op_tbwr ? lfsr[4:0] : tlb_index_spr[4:0];
 
 // TLB Entry High
 always @(posedge clk)
@@ -314,7 +328,7 @@ always @(posedge clk)
 			tlb_entry_hi[31:12] <= ex_rf_y[31:12];
 	end
 
-assign tlb_entry_hi_we = !ex_stall & ex_op_tbwi;
+assign tlb_entry_hi_we = !ex_stall & (ex_op_tbwi | ex_op_tbwr);
 
 // TLB Entry Low
 always @(posedge clk)
@@ -328,7 +342,7 @@ always @(posedge clk)
 		end
 	end
 
-assign tlb_entry_lo_we = !ex_stall & ex_op_tbwi;
+assign tlb_entry_lo_we = tlb_entry_hi_we;
 
 // TLB Bad Address
 always @(posedge clk)
