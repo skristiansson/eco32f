@@ -164,7 +164,9 @@ wire			lsu_stall;		// From eco32f_lsu of eco32f_lsu.v
 wire [31:0]		mem_alu_result;		// From eco32f_ctrl of eco32f_ctrl.v
 wire			mem_exc_dtlb_invalid;	// From eco32f_lsu of eco32f_lsu.v
 wire			mem_exc_dtlb_kmiss;	// From eco32f_lsu of eco32f_lsu.v
+wire			mem_exc_dtlb_priv;	// From eco32f_lsu of eco32f_lsu.v
 wire			mem_exc_dtlb_umiss;	// From eco32f_lsu of eco32f_lsu.v
+wire			mem_exc_dtlb_write;	// From eco32f_lsu of eco32f_lsu.v
 wire			mem_flush;		// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		mem_lsu_addr;		// From eco32f_lsu of eco32f_lsu.v
 wire [31:0]		mem_lsu_result;		// From eco32f_lsu of eco32f_lsu.v
@@ -400,6 +402,8 @@ eco32f_lsu
 	.mem_exc_dtlb_umiss		(mem_exc_dtlb_umiss),
 	.mem_exc_dtlb_kmiss		(mem_exc_dtlb_kmiss),
 	.mem_exc_dtlb_invalid		(mem_exc_dtlb_invalid),
+	.mem_exc_dtlb_priv		(mem_exc_dtlb_priv),
+	.mem_exc_dtlb_write		(mem_exc_dtlb_write),
 	.dwbm_adr_o			(dwbm_adr_o[31:0]),
 	.dwbm_stb_o			(dwbm_stb_o),
 	.dwbm_cyc_o			(dwbm_cyc_o),
@@ -422,6 +426,7 @@ eco32f_lsu
 	.dtlb_umiss			(dtlb_umiss),
 	.dtlb_kmiss			(dtlb_kmiss),
 	.dtlb_invalid			(dtlb_invalid),
+	.dtlb_priv			(dtlb_priv),
 	.dtlb_write			(dtlb_write),
 	.dwbm_err_i			(dwbm_err_i),
 	.dwbm_ack_i			(dwbm_ack_i),
