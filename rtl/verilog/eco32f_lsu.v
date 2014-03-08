@@ -33,6 +33,7 @@ module eco32f_lsu #(
 	input 		  clk,
 
 	input 		  ex_stall,
+	input 		  ex_flush,
 
 	input 		  ex_lsu_sext,
 	input [1:0] 	  ex_lsu_len,
@@ -110,7 +111,7 @@ reg [1:0]	mem_lsu_len;
 wire		lsu_exc;
 
 // Register signals from execute stage to memory stage
-always @(posedge clk)
+always @(posedge clk) begin
 	if (!ex_stall) begin
 		mem_op_load <= ex_op_load;
 		mem_op_store <= ex_op_store;
@@ -118,6 +119,12 @@ always @(posedge clk)
 		mem_lsu_len <= ex_lsu_len;
 		mem_lsu_addr <= ex_add_result;
 	end
+
+	if (ex_flush) begin
+		mem_op_load <= 0;
+		mem_op_store <= 0;
+	end
+end
 
 assign mem_exc_dtlb_umiss = (mem_op_load | mem_op_store) & dtlb_umiss;
 assign mem_exc_dtlb_kmiss = (mem_op_load | mem_op_store) & dtlb_kmiss;
