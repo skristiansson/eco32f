@@ -333,6 +333,8 @@ always @(posedge clk)
 	end else if (!mem_stall & do_exception) begin
 		if (mem_exc_dtlb)
 			tlb_entry_hi[31:12] <= mem_lsu_addr[31:12];
+		if (mem_exc_itlb)
+			tlb_entry_hi[31:12] <= mem_pc[31:12];
 	end else if (!ex_stall) begin
 		if (ex_op_mvts & (ex_imm[15:0] == `ECO32F_SPR_TLB_ENTRY_HI))
 			tlb_entry_hi[31:12] <= ex_rf_y[31:12];
@@ -362,6 +364,10 @@ always @(posedge clk)
 		if (mem_exc_dtlb) begin
 			tlb_bad_address <= mem_lsu_addr;
 			$display("dtlb exception: bad addr: %x", mem_lsu_addr);
+		end
+		if (mem_exc_itlb) begin
+			tlb_bad_address <= mem_pc;
+			$display("itlb exception: bad addr: %x", mem_pc);
 		end
 	end else if (!ex_stall) begin
 		if (ex_op_mvts & (ex_imm[15:0] == `ECO32F_SPR_TLB_BAD_ADDR))
