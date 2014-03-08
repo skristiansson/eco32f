@@ -127,6 +127,8 @@ reg		mem_exc_irq;
 wire		mem_exc_itlb;
 wire		mem_exc_dtlb;
 
+reg		did_branch;
+
 reg [15:0]	mem_masked_irq;
 
 reg [31:0]	tlb_index_spr;
@@ -158,9 +160,17 @@ always @(posedge clk)
 		mem_exc_itlb_priv <= ex_exc_itlb_priv;
  		mem_exc_div_by_zero <= ex_exc_div_by_zero;
  		mem_exc_trap <= ex_op_trap;
+		//
+		// Taking an interrupt right after a jump instruction has to be
+		// avoided, since the address currently in execute stage belongs
+		// to the flushed instruction after the jump/branch/rfx
+		// instruction.
+		//
 		mem_exc_irq <= |(psw[`ECO32F_SPR_PSW_IEN] & irq) &
-			       psw[`ECO32F_SPR_PSW_IC];
+			       psw[`ECO32F_SPR_PSW_IC] & !did_branch;
 		mem_masked_irq <= psw[`ECO32F_SPR_PSW_IEN] & irq;
+
+		did_branch <= do_branch;
 
 		mem_pc <= ex_pc;
 		if (ex_op_mvfs)
