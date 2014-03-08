@@ -87,6 +87,7 @@ module eco32f_decode #(
 	output reg 	  ex_op_tbri,
 	output reg 	  ex_op_tbwi,
 
+	output reg 	  ex_op_trap,
 	output reg 	  ex_op_rfx,
 
 	output reg 	  ex_op_rrb,
@@ -162,6 +163,7 @@ wire		op_tbwr;
 wire		op_tbri;
 wire		op_tbwi;
 
+wire		op_trap;
 wire		op_rfx;
 
 wire		lsu_zext;
@@ -299,6 +301,8 @@ assign op_tbwr = (op_code == `ECO32F_OP_TBWR);
 assign op_tbri = (op_code == `ECO32F_OP_TBRI);
 assign op_tbwi = (op_code == `ECO32F_OP_TBWI);
 
+assign op_trap = (op_code == `ECO32F_OP_TRAP);
+
 assign op_rfx = (op_code == `ECO32F_OP_RFX);
 
 assign lsu_zext = (op_code == `ECO32F_OP_LDHU)	|
@@ -394,6 +398,8 @@ always @(posedge clk)
 		ex_op_tbri <= op_tbri;
 		ex_op_tbwi <= op_tbwi;
 
+		ex_op_trap <= op_trap;
+
 		ex_op_rfx <= op_rfx;
 
 		ex_op_rrb <= op_rrb;
@@ -458,6 +464,8 @@ always @(posedge clk)
 			ex_op_tbwr <= 0;
 			ex_op_tbri <= 0;
  			ex_op_tbwi <= 0;
+
+			ex_op_trap <= 0;
 
 			ex_op_rfx <= 0;
 

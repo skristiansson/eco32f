@@ -64,6 +64,8 @@ module eco32f_ctrl #(
         input 		  ex_op_tbri,
         input 		  ex_op_tbwi,
 
+	input 		  ex_op_trap,
+
 	input 		  ex_op_rfx,
 
 	input 		  ex_op_rrb,
@@ -101,7 +103,6 @@ module eco32f_ctrl #(
 	input 		  ex_exc_itlb_invalid,
 	input 		  ex_exc_itlb_priv,
 	input 		  ex_exc_div_by_zero,
-	input 		  ex_exc_trap,
 	input 		  mem_exc_dtlb_kmiss,
 	input 		  mem_exc_dtlb_umiss,
 	input 		  mem_exc_dtlb_write,
@@ -154,7 +155,7 @@ always @(posedge clk)
 		mem_exc_itlb_invalid <= ex_exc_itlb_invalid;
 		mem_exc_itlb_priv <= ex_exc_itlb_priv;
  		mem_exc_div_by_zero <= ex_exc_div_by_zero;
- 		mem_exc_trap <= ex_exc_trap;
+ 		mem_exc_trap <= ex_op_trap;
 		mem_exc_irq <= |(psw[`ECO32F_SPR_PSW_IEN] & irq) &
 			       psw[`ECO32F_SPR_PSW_IC];
 		mem_masked_irq <= psw[`ECO32F_SPR_PSW_IEN] & irq;

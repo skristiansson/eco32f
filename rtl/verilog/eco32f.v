@@ -126,6 +126,7 @@ wire			ex_op_tbri;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_tbs;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_tbwi;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_tbwr;		// From eco32f_decode of eco32f_decode.v
+wire			ex_op_trap;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_xnor;		// From eco32f_decode of eco32f_decode.v
 wire			ex_op_xor;		// From eco32f_decode of eco32f_decode.v
 wire [31:0]		ex_pc;			// From eco32f_decode of eco32f_decode.v
@@ -276,6 +277,7 @@ eco32f_decode
 	.ex_op_tbwr			(ex_op_tbwr),
 	.ex_op_tbri			(ex_op_tbri),
 	.ex_op_tbwi			(ex_op_tbwi),
+	.ex_op_trap			(ex_op_trap),
 	.ex_op_rfx			(ex_op_rfx),
 	.ex_op_rrb			(ex_op_rrb),
 	.ex_op_jal			(ex_op_jal),
@@ -477,6 +479,7 @@ eco32f_ctrl
 	.ex_op_tbwr			(ex_op_tbwr),
 	.ex_op_tbri			(ex_op_tbri),
 	.ex_op_tbwi			(ex_op_tbwi),
+	.ex_op_trap			(ex_op_trap),
 	.ex_op_rfx			(ex_op_rfx),
 	.ex_op_rrb			(ex_op_rrb),
 	.ex_op_j			(ex_op_j),
@@ -493,7 +496,6 @@ eco32f_ctrl
 	.ex_exc_itlb_invalid		(ex_exc_itlb_invalid),
 	.ex_exc_itlb_priv		(ex_exc_itlb_priv),
 	.ex_exc_div_by_zero		(ex_exc_div_by_zero),
-	.ex_exc_trap			(ex_exc_trap),
 	.mem_exc_dtlb_kmiss		(mem_exc_dtlb_kmiss),
 	.mem_exc_dtlb_umiss		(mem_exc_dtlb_umiss),
 	.mem_exc_dtlb_write		(mem_exc_dtlb_write),
