@@ -214,6 +214,7 @@ always @(posedge clk)
 		LSU_CACHE_HIT_CHECK: begin
 			dwbm_adr_o <= dtlb_pa;
 			dwbm_sel_o <= bsel;
+			refill_cnt <= 0;
 			//
 			// Prioritize loads, the (potential) store will
 			// still be waiting for us when we come back here from
