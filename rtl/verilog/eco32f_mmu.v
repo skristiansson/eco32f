@@ -58,7 +58,7 @@ module eco32f_mmu #(
 	output reg 	  itlb_umiss,
 	output reg 	  itlb_kmiss,
 	output reg 	  itlb_invalid,
-	output reg 	  itlb_priv,
+	output 		  itlb_priv,
 
 	input [31:0] 	  dtlb_va,
 	output reg [31:0] dtlb_pa,
@@ -66,7 +66,7 @@ module eco32f_mmu #(
 	output reg 	  dtlb_kmiss,
 	output reg 	  dtlb_invalid,
 	output reg 	  dtlb_write,
-	output reg 	  dtlb_priv,
+	output 		  dtlb_priv,
 	input 		  dtlb_write_access
 );
 
@@ -81,12 +81,12 @@ reg [31:0] 	    tlb_valid;
 
 wire 		    itlb_miss;
 wire 		    itlb_direct_map;
-wire 		    itlb_kaccess;
+reg 		    itlb_kaccess;
 wire [4:0] 	    itlb_index;
 
 wire 		    dtlb_miss;
 wire 		    dtlb_direct_map;
-wire 		    dtlb_kaccess;
+reg 		    dtlb_kaccess;
 wire [4:0] 	    dtlb_index;
 
 //
@@ -124,11 +124,9 @@ end
 endfunction
 
 assign itlb_direct_map = &itlb_va[31:30];
-assign itlb_kaccess = itlb_va[19];
 assign {itlb_miss, itlb_index} = tlb_search(itlb_va[31:12]);
 
 assign dtlb_direct_map = &dtlb_va[31:30];
-assign dtlb_kaccess = dtlb_va[19];
 assign {dtlb_miss, dtlb_index} = tlb_search(dtlb_va[31:12]);
 
 // Instruction tlb request handling
@@ -139,13 +137,15 @@ always @(posedge clk)
 	else
 		itlb_pa <= {tlb_ppf[itlb_index], itlb_va[11:0]};
 
-// Faults and misses
+// Instruction faults and misses
 always @(posedge clk) begin
-	itlb_kmiss <= itlb_miss & !itlb_direct_map & itlb_kaccess;
-	itlb_umiss <= itlb_miss & !itlb_direct_map & !itlb_kaccess;
+	itlb_kmiss <= itlb_miss & !itlb_direct_map & itlb_va[31];
+	itlb_umiss <= itlb_miss & !itlb_direct_map & !itlb_va[31];
 	itlb_invalid <= !tlb_valid[itlb_index] & !itlb_direct_map;
-	itlb_priv <= itlb_kaccess & psw[`ECO32F_SPR_PSW_UC];
+	itlb_kaccess <= itlb_va[31];
 end
+
+assign itlb_priv = itlb_kaccess & psw[`ECO32F_SPR_PSW_UC];
 
 // Data tlb request handling
 always @(posedge clk)
@@ -155,14 +155,16 @@ always @(posedge clk)
 	else
 		dtlb_pa <= {tlb_ppf[dtlb_index], dtlb_va[11:0]};
 
-// Faults and misses
+// Data faults and misses
 always @(posedge clk) begin
-	dtlb_kmiss <= dtlb_miss & !dtlb_direct_map & dtlb_kaccess;
-	dtlb_umiss <= dtlb_miss & !dtlb_direct_map & !dtlb_kaccess;
+	dtlb_kmiss <= dtlb_miss & !dtlb_direct_map & dtlb_va[31];
+	dtlb_umiss <= dtlb_miss & !dtlb_direct_map & !dtlb_va[31];
 	dtlb_invalid <= !tlb_valid[dtlb_index] & !dtlb_direct_map;
 	dtlb_write <= dtlb_write_access & !tlb_we[dtlb_index] &
 		      !dtlb_direct_map;
-	dtlb_priv <= dtlb_kaccess & psw[`ECO32F_SPR_PSW_UC];
+	dtlb_kaccess <= dtlb_va[31];
 end
+
+assign dtlb_priv = dtlb_kaccess & psw[`ECO32F_SPR_PSW_UC];
 
 endmodule
