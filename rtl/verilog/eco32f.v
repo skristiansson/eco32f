@@ -359,6 +359,8 @@ eco32f_alu
 	.id_stall			(id_stall),
 	.ex_stall			(ex_stall),
 	.mem_stall			(mem_stall),
+	.ex_flush			(ex_flush),
+	.mem_flush			(mem_flush),
 	.id_pc				(id_pc[31:0]),
 	.ex_op_add			(ex_op_add),
 	.ex_op_sub			(ex_op_sub),

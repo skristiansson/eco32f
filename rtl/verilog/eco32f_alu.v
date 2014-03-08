@@ -32,6 +32,9 @@ module eco32f_alu #(
 	input 		  ex_stall,
 	input 		  mem_stall,
 
+	input 		  ex_flush,
+	input 		  mem_flush,
+
 	output 		  alu_stall,
 
 	input [31:0] 	  id_pc,
@@ -223,10 +226,16 @@ always @(posedge clk) begin
 		mem_op_mul <= ex_op_mul;
 	end
 
+	if (ex_flush)
+		mem_op_mul <= 0;
+
 	if (!mem_stall) begin
 		wb_mul_result <= mul_x * mul_y;
 		wb_op_mul <= mem_op_mul;
 	end
+
+	if (mem_flush)
+		wb_op_mul <= 0;
 end
 
 endmodule
