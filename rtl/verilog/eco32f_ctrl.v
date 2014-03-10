@@ -217,16 +217,6 @@ assign exception_pc = ((mem_exc_itlb_umiss | mem_exc_dtlb_umiss) ?
 		       32'h00000008 : 32'h00000004) |
 		      (psw[`ECO32F_SPR_PSW_V] ? 32'hc0000000 : 32'he0000000);
 
-// SJK DEBUG
-always @(posedge clk)
-	if (!ex_stall) begin
-		if (ex_op_tbs | ex_op_tbri) begin
-			$display("unsupported tlb insn");
-			$finish();
-		end
-	end
-// SJK DEBUG END
-
 //
 // Special Purpose Register (SPR) handling
 //
