@@ -422,6 +422,7 @@ eco32f_lsu
 	.clk				(clk),
 	.ex_stall			(ex_stall),
 	.ex_flush			(ex_flush),
+	.mem_flush			(mem_flush),
 	.ex_lsu_sext			(ex_lsu_sext),
 	.ex_lsu_len			(ex_lsu_len[1:0]),
 	.ex_op_load			(ex_op_load),

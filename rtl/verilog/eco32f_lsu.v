@@ -34,6 +34,7 @@ module eco32f_lsu #(
 
 	input 		  ex_stall,
 	input 		  ex_flush,
+	input 		  mem_flush,
 
 	input 		  ex_lsu_sext,
 	input [1:0] 	  ex_lsu_len,
@@ -289,8 +290,8 @@ always @(posedge clk)
 
 			lsu_state <= LSU_WRITE;
 
-			// Abort on exceptions
-			if (lsu_exc) begin
+			// Abort on exceptions and flush
+			if (lsu_exc | mem_flush) begin
 				dwbm_stb_o <= 0;
 				dwbm_cyc_o <= 0;
 				dwbm_we_o <= 0;
