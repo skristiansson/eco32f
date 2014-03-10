@@ -339,7 +339,7 @@ always @(posedge clk)
 			tlb_entry_hi[31:12] <= tlb_entry_hi_rd_data[31:12];
 	end
 
-assign tlb_entry_hi_we = !ex_stall & (ex_op_tbwi | ex_op_tbwr);
+assign tlb_entry_hi_we = !ex_stall & !ex_flush & (ex_op_tbwi | ex_op_tbwr);
 
 // TLB Entry Low
 always @(posedge clk)
