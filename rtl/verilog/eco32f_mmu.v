@@ -69,7 +69,8 @@ module eco32f_mmu #(
 	output reg 	  dtlb_invalid,
 	output reg 	  dtlb_write,
 	output 		  dtlb_priv,
-	input 		  dtlb_write_access
+
+	input 		  ex_op_store
 );
 
 // Virtual page frame
@@ -162,8 +163,7 @@ always @(posedge clk) begin
 	dtlb_kmiss <= dtlb_miss & !dtlb_direct_map & dtlb_va[31];
 	dtlb_umiss <= dtlb_miss & !dtlb_direct_map & !dtlb_va[31];
 	dtlb_invalid <= !tlb_valid[dtlb_index] & !dtlb_direct_map;
-	dtlb_write <= dtlb_write_access & !tlb_we[dtlb_index] &
-		      !dtlb_direct_map;
+	dtlb_write <= ex_op_store & !tlb_we[dtlb_index] & !dtlb_direct_map;
 	dtlb_kaccess <= dtlb_va[31];
 end
 

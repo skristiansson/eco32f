@@ -559,6 +559,6 @@ eco32f_mmu
 	.tlb_entry_lo_we		(tlb_entry_lo_we),
 	.itlb_va			(itlb_va[31:0]),
 	.dtlb_va			(dtlb_va[31:0]),
-	.dtlb_write_access		(dtlb_write_access));
+	.ex_op_store			(ex_op_store));
 
 endmodule
