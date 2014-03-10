@@ -171,7 +171,6 @@ reg [1:0]	lsu_len;
 wire [31:0]	imm;
 wire [31:0]	br_imm;
 wire		signed_div;
-wire		id_bubble;
 
 assign op_code = id_insn[31:26];
 
