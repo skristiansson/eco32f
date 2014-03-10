@@ -363,14 +363,10 @@ always @(posedge clk)
 	if (rst) begin
 		tlb_bad_address <= 0;
 	end else if (!mem_stall & do_exception) begin
-		if (mem_exc_dtlb) begin
+		if (mem_exc_dtlb)
 			tlb_bad_address <= mem_lsu_addr;
-			$display("dtlb exception: bad addr: %x", mem_lsu_addr);
-		end
-		if (mem_exc_itlb) begin
+		if (mem_exc_itlb)
 			tlb_bad_address <= mem_pc;
-			$display("itlb exception: bad addr: %x", mem_pc);
-		end
 	end else if (!ex_stall) begin
 		if (ex_op_mvts & (ex_imm[15:0] == `ECO32F_SPR_TLB_BAD_ADDR))
 			tlb_bad_address <= ex_rf_y;
