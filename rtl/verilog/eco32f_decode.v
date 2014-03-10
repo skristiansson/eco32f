@@ -112,7 +112,7 @@ module eco32f_decode (
 	output reg [4:0]  ex_rf_x_addr,
 	output reg [4:0]  ex_rf_y_addr,
 	output reg [4:0]  ex_rf_r_addr,
-	output 		  ex_rf_r_we,
+	output reg 	  ex_rf_r_we,
 
 	output reg 	  ex_bubble,
 	output reg 	  ex_imm_sel,

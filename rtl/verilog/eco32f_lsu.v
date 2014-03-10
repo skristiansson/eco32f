@@ -72,7 +72,7 @@ module eco32f_lsu (
 	output reg 	  dwbm_stb_o,
 	output reg 	  dwbm_cyc_o,
 	output reg [3:0]  dwbm_sel_o,
-	output 		  dwbm_we_o,
+	output reg 	  dwbm_we_o,
 	output [2:0] 	  dwbm_cti_o,
 	output [1:0] 	  dwbm_bte_o,
 	output [31:0] 	  dwbm_dat_o,

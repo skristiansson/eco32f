@@ -154,7 +154,7 @@ reg [5:0]	div_cnt;
 reg [31:0]	div_n;
 reg [31:0]	div_d;
 reg [31:0]	div_r;
-reg [32:0]	div_sub;
+wire [32:0]	div_sub;
 reg		div_neg;
 reg		div_load;
 reg		div_in_progress;
