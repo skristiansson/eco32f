@@ -53,6 +53,8 @@ module eco32f_mmu #(
 	output [31:0] 	  tlb_entry_hi_rd_data,
 	output [31:0] 	  tlb_entry_lo_rd_data,
 
+	output reg [5:0]  tbs_result,
+
 	input [31:0] 	  itlb_va,
 	output reg [31:0] itlb_pa,
 	output reg 	  itlb_umiss,
@@ -166,5 +168,9 @@ always @(posedge clk) begin
 end
 
 assign dtlb_priv = dtlb_kaccess & psw[`ECO32F_SPR_PSW_UC];
+
+// tbs instruction
+always @(posedge clk)
+	tbs_result <= tlb_search(tlb_entry_hi[31:12]);
 
 endmodule

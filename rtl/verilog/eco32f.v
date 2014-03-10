@@ -179,6 +179,7 @@ wire [4:0]		mem_rf_r_addr;		// From eco32f_registerfile of eco32f_registerfile.v
 wire			mem_rf_r_we;		// From eco32f_registerfile of eco32f_registerfile.v
 wire			mem_stall;		// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		psw;			// From eco32f_ctrl of eco32f_ctrl.v
+wire [5:0]		tbs_result;		// From eco32f_mmu of eco32f_mmu.v
 wire [31:0]		tlb_bad_address;	// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		tlb_entry_hi;		// From eco32f_ctrl of eco32f_ctrl.v
 wire [31:0]		tlb_entry_hi_rd_data;	// From eco32f_mmu of eco32f_mmu.v
@@ -491,6 +492,7 @@ eco32f_ctrl
 	.mem_lsu_addr			(mem_lsu_addr[31:0]),
 	.tlb_entry_hi_rd_data		(tlb_entry_hi_rd_data[31:0]),
 	.tlb_entry_lo_rd_data		(tlb_entry_lo_rd_data[31:0]),
+	.tbs_result			(tbs_result[5:0]),
 	.irq				(irq[15:0]),
 	.ex_exc_ibus_fault		(ex_exc_ibus_fault),
 	.ex_exc_illegal_insn		(ex_exc_illegal_insn),
@@ -534,6 +536,7 @@ eco32f_mmu
 	// Outputs
 	.tlb_entry_hi_rd_data		(tlb_entry_hi_rd_data[31:0]),
 	.tlb_entry_lo_rd_data		(tlb_entry_lo_rd_data[31:0]),
+	.tbs_result			(tbs_result[5:0]),
 	.itlb_pa			(itlb_pa[31:0]),
 	.itlb_umiss			(itlb_umiss),
 	.itlb_kmiss			(itlb_kmiss),

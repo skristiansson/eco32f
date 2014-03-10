@@ -94,6 +94,8 @@ module eco32f_ctrl #(
 	input [31:0] 	  tlb_entry_lo_rd_data,
 	output reg [31:0] tlb_bad_address,
 
+	input [5:0] 	  tbs_result,
+
 	// IRQs and exceptions
 	input [15:0] 	  irq,
 	input 		  ex_exc_ibus_fault,
@@ -313,6 +315,9 @@ always @(posedge clk)
 	end else if (!ex_stall) begin
 		if (ex_op_mvts & (ex_imm[15:0] == `ECO32F_SPR_TLB_INDEX))
 			tlb_index_spr <= ex_rf_y;
+
+		if (ex_op_tbs)
+			tlb_index_spr <= {tbs_result[5], 26'h0, tbs_result[4:0]};
 	end
 
 // Random index generation
@@ -339,6 +344,9 @@ always @(posedge clk)
 	end else if (!ex_stall) begin
 		if (ex_op_mvts & (ex_imm[15:0] == `ECO32F_SPR_TLB_ENTRY_HI))
 			tlb_entry_hi[31:12] <= ex_rf_y[31:12];
+
+		if (ex_op_tbri)
+			tlb_entry_hi[31:12] <= tlb_entry_hi_rd_data[31:12];
 	end
 
 assign tlb_entry_hi_we = !ex_stall & (ex_op_tbwi | ex_op_tbwr);
@@ -353,6 +361,9 @@ always @(posedge clk)
 			tlb_entry_lo[31:12] <= ex_rf_y[31:12];
 			tlb_entry_lo[1:0] <= ex_rf_y[1:0];
 		end
+
+		if (ex_op_tbri)
+			tlb_entry_lo <= tlb_entry_lo_rd_data;
 	end
 
 assign tlb_entry_lo_we = tlb_entry_hi_we;
