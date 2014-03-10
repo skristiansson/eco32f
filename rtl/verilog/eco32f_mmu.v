@@ -125,6 +125,19 @@ begin
 end
 endfunction
 
+//
+// Workaround for a bug in quartus 13.1
+// Without this dummy wire hooking into all the tlb_vpf entries,
+// quartus will try to infer tlb_vpf as a RAM and then fail..
+//
+generate
+wire [31:0] dummy;
+genvar i;
+	for (i = 0; i < 32; i = i + 1) begin : quartus_workaround
+		assign dummy[i] = |tlb_vpf[i];
+	end
+endgenerate
+
 assign itlb_direct_map = &itlb_va[31:30];
 assign {itlb_miss, itlb_index} = tlb_search(itlb_va[31:12]);
 
