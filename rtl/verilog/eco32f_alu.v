@@ -23,8 +23,7 @@
  * WORK, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-module eco32f_alu #(
-)(
+module eco32f_alu (
 	input 		  rst,
 	input 		  clk,
 

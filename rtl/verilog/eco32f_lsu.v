@@ -27,8 +27,7 @@
 // Load Store Unit
 //
 
-module eco32f_lsu #(
-)(
+module eco32f_lsu (
 	input 		  rst,
 	input 		  clk,
 
@@ -330,22 +329,20 @@ always @(posedge clk)
 		endcase
 	end
 
-eco32f_cache #(
-) eco32f_dcache (
-		.rst			(rst),
-		.clk			(clk),
+eco32f_cache eco32f_dcache (
+	.rst			(rst),
+	.clk			(clk),
 
-		.miss			(cache_miss),
+	.miss			(cache_miss),
 
-		.read_addr		(dtlb_va),
-		.match_addr		(dtlb_pa),
-		.read_data		(cache_rd_data),
+	.read_addr		(dtlb_va),
+	.match_addr		(dtlb_pa),
+	.read_data		(cache_rd_data),
 
-		.write_addr		(cache_wr_addr),
-		.write_data		(cache_wr_data),
-		.write_en		(cache_wr_en),
-		.invalidate		(0) // TODO
-
+	.write_addr		(cache_wr_addr),
+	.write_data		(cache_wr_data),
+	.write_en		(cache_wr_en),
+	.invalidate		(0) // TODO
 );
 
 endmodule

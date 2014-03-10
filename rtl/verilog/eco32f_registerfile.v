@@ -23,8 +23,7 @@
  * WORK, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-module eco32f_registerfile #(
-)(
+module eco32f_registerfile (
 	input 		 rst,
 	input 		 clk,
 

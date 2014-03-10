@@ -206,22 +206,20 @@ always @(posedge clk) begin
 	end
 end
 
-eco32f_cache #(
-) eco32f_icache (
-		.rst			(rst),
-		.clk			(clk),
+eco32f_cache eco32f_icache (
+	.rst			(rst),
+	.clk			(clk),
 
-		.miss			(cache_miss),
+	.miss			(cache_miss),
 
-		.read_addr		(itlb_va),
-		.match_addr		(itlb_pa),
-		.read_data		(cache_rd_data),
+	.read_addr		(itlb_va),
+	.match_addr		(itlb_pa),
+	.read_data		(cache_rd_data),
 
-		.write_addr		(cache_wr_addr),
-		.write_data		(cache_wr_data),
-		.write_en		(cache_wr_en),
-		.invalidate		(0)
-
+	.write_addr		(cache_wr_addr),
+	.write_data		(cache_wr_data),
+	.write_en		(cache_wr_en),
+	.invalidate		(0) // TODO
 );
 
 endmodule

@@ -37,8 +37,7 @@
 
 `include "eco32f.vh"
 
-module eco32f_mmu #(
-)(
+module eco32f_mmu (
 	input 		  rst,
 	input 		  clk,
 

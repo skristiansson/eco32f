@@ -25,8 +25,7 @@
 
 `include "eco32f.vh"
 
-module eco32f_decode #(
-)(
+module eco32f_decode (
 	input 		  rst,
 	input 		  clk,
 

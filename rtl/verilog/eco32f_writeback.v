@@ -23,8 +23,7 @@
  * WORK, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-module eco32f_writeback #(
-)(
+module eco32f_writeback (
 	input 		 rst,
 	input 		 clk,
 

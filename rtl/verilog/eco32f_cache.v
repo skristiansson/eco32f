@@ -27,8 +27,7 @@
  * Common module for icache and dcache.
  */
 
-module eco32f_cache #(
-)(
+module eco32f_cache (
 	input 	      rst,
 	input 	      clk,
 
