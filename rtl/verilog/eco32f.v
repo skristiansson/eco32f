@@ -195,12 +195,9 @@ wire [4:0]		wb_rf_r_addr;		// From eco32f_writeback of eco32f_writeback.v
 wire			wb_rf_r_we;		// From eco32f_writeback of eco32f_writeback.v
 // End of automatics
 
-eco32f_fetch
-      #(
+eco32f_fetch #(
 	.RESET_PC			(RESET_PC)
-)
-eco32f_fetch
-       (/*AUTOINST*/
+) eco32f_fetch (/*AUTOINST*/
 	// Outputs
 	.id_pc				(id_pc[31:0]),
 	.id_insn			(id_insn[31:0]),
@@ -237,10 +234,7 @@ eco32f_fetch
 	.iwbm_dat_i			(iwbm_dat_i[31:0]),
 	.iwbm_rty_i			(iwbm_rty_i));
 
-eco32f_decode #(
-)
-eco32f_decode
-       (/*AUTOINST*/
+eco32f_decode eco32f_decode (/*AUTOINST*/
 	// Outputs
 	.id_bubble			(id_bubble),
 	.id_rf_x_addr			(id_rf_x_addr[4:0]),
@@ -316,10 +310,7 @@ eco32f_decode
 	.mem_rf_r_addr			(mem_rf_r_addr[4:0]),
 	.mem_op_mul			(mem_op_mul));
 
-eco32f_registerfile #(
-)
-eco32f_registerfile
-       (/*AUTOINST*/
+eco32f_registerfile eco32f_registerfile (/*AUTOINST*/
 	// Outputs
 	.mem_rf_r_addr			(mem_rf_r_addr[4:0]),
 	.mem_rf_r_we			(mem_rf_r_we),
@@ -342,10 +333,7 @@ eco32f_registerfile
 	.wb_rf_r_we			(wb_rf_r_we),
 	.wb_rf_r			(wb_rf_r[31:0]));
 
-eco32f_alu #(
-)
-eco32f_alu
-       (/*AUTOINST*/
+eco32f_alu eco32f_alu (/*AUTOINST*/
 	// Outputs
 	.alu_stall			(alu_stall),
 	.ex_add_result			(ex_add_result[31:0]),
@@ -393,10 +381,7 @@ eco32f_alu
 	.ex_imm				(ex_imm[31:0]),
 	.ex_imm_sel			(ex_imm_sel));
 
-eco32f_lsu #(
-)
-eco32f_lsu
-       (/*AUTOINST*/
+eco32f_lsu eco32f_lsu (/*AUTOINST*/
 	// Outputs
 	.mem_op_load			(mem_op_load),
 	.mem_op_store			(mem_op_store),
@@ -440,10 +425,7 @@ eco32f_lsu
 	.dwbm_dat_i			(dwbm_dat_i[31:0]),
 	.dwbm_rty_i			(dwbm_rty_i));
 
-eco32f_ctrl #(
-)
-eco32f_ctrl
-       (/*AUTOINST*/
+eco32f_ctrl eco32f_ctrl (/*AUTOINST*/
 	// Outputs
 	.if_stall			(if_stall),
 	.id_stall			(id_stall),
@@ -508,10 +490,7 @@ eco32f_ctrl
 	.mem_exc_dtlb_invalid		(mem_exc_dtlb_invalid),
 	.mem_exc_dtlb_priv		(mem_exc_dtlb_priv));
 
-eco32f_writeback #(
-)
-eco32f_writeback
-       (/*AUTOINST*/
+eco32f_writeback eco32f_writeback (/*AUTOINST*/
 	// Outputs
 	.wb_rf_r			(wb_rf_r[31:0]),
 	.wb_rf_r_we			(wb_rf_r_we),
@@ -530,10 +509,7 @@ eco32f_writeback
 	.wb_op_mul			(wb_op_mul),
 	.wb_mul_result			(wb_mul_result[31:0]));
 
-eco32f_mmu #(
-)
-eco32f_mmu
-       (/*AUTOINST*/
+eco32f_mmu eco32f_mmu (/*AUTOINST*/
 	// Outputs
 	.tlb_entry_hi_rd_data		(tlb_entry_hi_rd_data[31:0]),
 	.tlb_entry_lo_rd_data		(tlb_entry_lo_rd_data[31:0]),
