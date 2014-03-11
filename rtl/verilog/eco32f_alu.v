@@ -127,7 +127,7 @@ assign ex_cond_true = ex_op_beq & x_eq_y |
 		      ex_op_bltu & x_ltu_y |
 		      ex_op_bge & !x_lts_y |
 		      ex_op_bgeu & !x_ltu_y |
-	 	      ex_op_bgt & !x_lts_y & !x_eq_y |
+		      ex_op_bgt & !x_lts_y & !x_eq_y |
 		      ex_op_bgtu & !x_ltu_y & !x_eq_y;
 
 assign ex_alu_result = ex_op_or ? or_result :
