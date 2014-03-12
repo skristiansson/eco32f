@@ -39,15 +39,15 @@ module eco32f_fetch #(
 	input 		  if_flush,
 
 	output reg [31:0] id_pc,
-	output [31:0] 	  id_insn,
+	output reg [31:0] id_insn,
 
-	output 		  id_exc_ibus_fault,
-	output 		  id_exc_itlb_kmiss,
-	output 		  id_exc_itlb_umiss,
-	output 		  id_exc_itlb_invalid,
-	output 		  id_exc_itlb_priv,
+	output reg 	  id_exc_ibus_fault,
+	output reg 	  id_exc_itlb_kmiss,
+	output reg 	  id_exc_itlb_umiss,
+	output reg 	  id_exc_itlb_invalid,
+	output reg 	  id_exc_itlb_priv,
 
-	output [31:0] 	  itlb_va,
+	output reg [31:0] itlb_va,
 	input [31:0] 	  itlb_pa,
 	input 		  itlb_kmiss,
 	input 		  itlb_umiss,
@@ -82,7 +82,7 @@ localparam [2:0]
 reg [2:0]	if_state;
 reg [31:0]	if_pc;
 
-wire		id_exc;
+wire		if_exc;
 
 reg		ibus_fault;
 
@@ -97,31 +97,48 @@ reg [31:0]	cache_wr_addr;
 reg [31:0]	cache_wr_data;
 reg		cache_wr_en;
 
+wire		if_exc_ibus_fault;
+wire		if_exc_itlb_kmiss;
+wire		if_exc_itlb_umiss;
+wire		if_exc_itlb_invalid;
+wire		if_exc_itlb_priv;
+
 // Cache writes take two cycles to propagate, this is accounted for by
 // using the refill_valid_r signals.
 assign cache_hit = !cache_miss & refill_valid_r[itlb_pa[4:2]];
 
-assign itlb_va = if_pc;
-assign id_insn = cache_hit & !id_exc & !if_flush ?
-		 cache_rd_data : `ECO32F_INSN_NOP;
+always @(posedge clk)
+	if (if_exc | if_flush) begin
+		id_insn <= `ECO32F_INSN_NOP;
+	end else if (!if_stall) begin
+		if (cache_hit)
+			id_insn <= cache_rd_data;
+		else
+			id_insn <= `ECO32F_INSN_NOP;
+	end
 
-/* PC generation */
+
+// PC generation
 always @(*)
 	if (rst)
-		if_pc = RESET_PC;
+		itlb_va = RESET_PC;
 	else if (do_exception)
-		if_pc = exception_pc;
+		itlb_va = exception_pc;
 	else if (do_branch)
-		if_pc = branch_pc;
+		itlb_va = branch_pc;
 	else if (cache_hit & !if_stall)
-		if_pc = id_pc + 4;
+		itlb_va = if_pc + 4;
 	else
-		if_pc = id_pc;
+		itlb_va = if_pc;
 
 always @(posedge clk)
 	if (rst)
-		id_pc <= RESET_PC;
-	else if (!if_stall | do_exception)
+		if_pc <= RESET_PC;
+	else if (!if_stall | do_exception | do_branch)
+		if_pc <= itlb_va;
+
+always @(posedge clk)
+	if (!if_stall)
 		id_pc <= if_pc;
 
 always @(posedge clk)
@@ -131,17 +148,25 @@ always @(posedge clk)
 		ibus_fault <= iwbm_err_i;
 
 // Exceptions
-assign id_exc_itlb_kmiss = itlb_kmiss & !if_flush;
-assign id_exc_itlb_umiss = itlb_umiss & !if_flush;
-assign id_exc_itlb_invalid = itlb_invalid & !if_flush;
-assign id_exc_itlb_priv = itlb_priv & !if_flush;
-assign id_exc_ibus_fault = ibus_fault & !if_flush;
+assign if_exc_itlb_kmiss = itlb_kmiss & !if_flush;
+assign if_exc_itlb_umiss = itlb_umiss & !if_flush;
+assign if_exc_itlb_invalid = itlb_invalid & !if_flush;
+assign if_exc_itlb_priv = itlb_priv & !if_flush;
+assign if_exc_ibus_fault = ibus_fault & !if_flush;
 
-assign id_exc = id_exc_itlb_kmiss |
-		id_exc_itlb_umiss |
-		id_exc_itlb_invalid |
-		id_exc_itlb_priv |
-		id_exc_ibus_fault;
+assign if_exc = if_exc_itlb_kmiss |
+		if_exc_itlb_umiss |
+		if_exc_itlb_invalid |
+		if_exc_itlb_priv |
+		if_exc_ibus_fault;
+
+always @(posedge clk) begin
+	id_exc_itlb_kmiss <= if_exc_itlb_kmiss;
+	id_exc_itlb_umiss <= if_exc_itlb_umiss;
+	id_exc_itlb_invalid <= if_exc_itlb_invalid;
+	id_exc_itlb_priv <= if_exc_itlb_priv;
+	id_exc_ibus_fault <= if_exc_ibus_fault;
+end
 
 // Wrapping burst with a length of 8.
 assign iwbm_bte_o = 2'b10;
@@ -169,7 +194,7 @@ always @(posedge clk) begin
 
 		IF_CACHE_HIT_CHECK: begin
 			iwbm_adr_o <= itlb_pa;
-			if (cache_miss & !if_flush & !id_exc) begin
+			if (cache_miss & !if_flush & !if_exc) begin
 				refill_valid <= 0;
 				refill_valid_r <= 0;
 				refill_cnt <= 7;

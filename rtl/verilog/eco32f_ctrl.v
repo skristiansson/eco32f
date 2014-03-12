@@ -128,7 +128,8 @@ reg		mem_exc_irq;
 wire		mem_exc_itlb;
 wire		mem_exc_dtlb;
 
-reg		did_branch;
+reg		id_did_branch;
+reg		ex_did_branch;
 
 reg [15:0]	mem_masked_irq;
 
@@ -143,12 +144,21 @@ assign if_stall = id_stall | id_bubble;
 // Flush logic
 assign mem_flush = do_exception;
 assign ex_flush = mem_flush;
-assign id_flush = ex_flush;
-assign if_flush = id_flush | do_branch;
+assign id_flush = ex_flush | do_branch;
+assign if_flush = id_flush;
 
 // Branch/jump logic
-assign do_branch = ex_op_j | ex_op_jr | ex_op_rfx | ex_op_rrb & ex_cond_true;
+assign do_branch = (ex_op_j | ex_op_jr | ex_op_rfx | ex_op_rrb & ex_cond_true) &
+		   !ex_stall;
 assign branch_pc = (ex_op_jr | ex_op_rfx) ? ex_rf_x : ex_branch_imm;
+
+// Track the do_branch signal as it propagates through the pipeline
+always @(posedge clk) begin
+	if (!if_stall)
+		id_did_branch <= do_branch;
+	if (!id_stall)
+		ex_did_branch <= id_did_branch;
+end
 
 // Register signals from execute to memory stage
 always @(posedge clk) begin
@@ -168,10 +178,9 @@ always @(posedge clk) begin
 		// instruction.
 		//
 		mem_exc_irq <= |(psw[`ECO32F_SPR_PSW_IEN] & irq) &
-			       psw[`ECO32F_SPR_PSW_IC] & !did_branch;
+			       psw[`ECO32F_SPR_PSW_IC] &
+			       !(id_did_branch | ex_did_branch);
 		mem_masked_irq <= psw[`ECO32F_SPR_PSW_IEN] & irq;
-
-		did_branch <= do_branch;
 
 		mem_pc <= ex_pc;
 		if (ex_op_mvfs)
