@@ -38,6 +38,10 @@ module eco32f_fetch #(
 	input 		  if_stall,
 	input 		  if_flush,
 
+	// Register file address
+	output [4:0] 	  if_rf_x_addr,
+	output [4:0] 	  if_rf_y_addr,
+
 	output reg [31:0] id_pc,
 	output reg [31:0] id_insn,
 
@@ -103,6 +107,8 @@ wire		if_exc_itlb_umiss;
 wire		if_exc_itlb_invalid;
 wire		if_exc_itlb_priv;
 
+wire		op_rfx;
+
 // Cache writes take two cycles to propagate, this is accounted for by
 // using the refill_valid_r signals.
 assign cache_hit = !cache_miss & refill_valid_r[itlb_pa[4:2]];
@@ -167,6 +173,17 @@ always @(posedge clk) begin
 	id_exc_itlb_priv <= if_exc_itlb_priv;
 	id_exc_ibus_fault <= if_exc_ibus_fault;
 end
+
+//
+// This mux isn't entirely necessary, but it's serves as a workaround for a bug
+// in quartus 13.1, where the icache RAM would not be able to be inferred as a
+// block ram, due to being "asynchrounusly read".
+//
+wire [31:0] if_insn = if_flush ? `ECO32F_INSN_NOP : cache_rd_data;
+
+assign op_rfx = (if_insn[31:26] == `ECO32F_OP_RFX);
+assign if_rf_x_addr = op_rfx ? 5'd30 : if_insn[25:21];
+assign if_rf_y_addr = if_insn[20:16];
 
 // Wrapping burst with a length of 8.
 assign iwbm_bte_o = 2'b10;

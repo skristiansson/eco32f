@@ -150,10 +150,14 @@ wire [31:0]		id_insn;		// From eco32f_fetch of eco32f_fetch.v
 wire [31:0]		id_pc;			// From eco32f_fetch of eco32f_fetch.v
 wire [4:0]		id_rf_r_addr;		// From eco32f_decode of eco32f_decode.v
 wire			id_rf_r_we;		// From eco32f_decode of eco32f_decode.v
+wire [31:0]		id_rf_x;		// From eco32f_registerfile of eco32f_registerfile.v
 wire [4:0]		id_rf_x_addr;		// From eco32f_decode of eco32f_decode.v
+wire [31:0]		id_rf_y;		// From eco32f_registerfile of eco32f_registerfile.v
 wire [4:0]		id_rf_y_addr;		// From eco32f_decode of eco32f_decode.v
 wire			id_stall;		// From eco32f_ctrl of eco32f_ctrl.v
 wire			if_flush;		// From eco32f_ctrl of eco32f_ctrl.v
+wire [4:0]		if_rf_x_addr;		// From eco32f_fetch of eco32f_fetch.v
+wire [4:0]		if_rf_y_addr;		// From eco32f_fetch of eco32f_fetch.v
 wire			if_stall;		// From eco32f_ctrl of eco32f_ctrl.v
 wire			itlb_invalid;		// From eco32f_mmu of eco32f_mmu.v
 wire			itlb_kmiss;		// From eco32f_mmu of eco32f_mmu.v
@@ -199,6 +203,8 @@ eco32f_fetch #(
 	.RESET_PC			(RESET_PC)
 ) eco32f_fetch (/*AUTOINST*/
 	// Outputs
+	.if_rf_x_addr			(if_rf_x_addr[4:0]),
+	.if_rf_y_addr			(if_rf_y_addr[4:0]),
 	.id_pc				(id_pc[31:0]),
 	.id_insn			(id_insn[31:0]),
 	.id_exc_ibus_fault		(id_exc_ibus_fault),
@@ -314,14 +320,19 @@ eco32f_registerfile eco32f_registerfile (/*AUTOINST*/
 	// Outputs
 	.mem_rf_r_addr			(mem_rf_r_addr[4:0]),
 	.mem_rf_r_we			(mem_rf_r_we),
+	.id_rf_x			(id_rf_x[31:0]),
+	.id_rf_y			(id_rf_y[31:0]),
 	.ex_rf_x			(ex_rf_x[31:0]),
 	.ex_rf_y			(ex_rf_y[31:0]),
 	// Inputs
 	.rst				(rst),
 	.clk				(clk),
+	.if_stall			(if_stall),
 	.id_stall			(id_stall),
 	.ex_stall			(ex_stall),
 	.ex_flush			(ex_flush),
+	.if_rf_x_addr			(if_rf_x_addr[4:0]),
+	.if_rf_y_addr			(if_rf_y_addr[4:0]),
 	.id_rf_x_addr			(id_rf_x_addr[4:0]),
 	.id_rf_y_addr			(id_rf_y_addr[4:0]),
 	.ex_rf_x_addr			(ex_rf_x_addr[4:0]),

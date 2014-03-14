@@ -425,8 +425,10 @@ always @(posedge clk)
 		ex_rf_x_addr <= id_rf_x_addr;
 		ex_rf_y_addr <= id_rf_y_addr;
 		ex_rf_r_addr <= id_rf_r_addr;
-		ex_rf_r_we <= id_rf_r_we;
-
+		if (id_rf_r_addr != 0)
+			ex_rf_r_we <= id_rf_r_we;
+		else
+			ex_rf_r_we <= 0;
 		ex_bubble <= id_bubble;
 
 		// Push out a no-op

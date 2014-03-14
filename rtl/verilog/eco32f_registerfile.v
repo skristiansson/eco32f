@@ -27,10 +27,13 @@ module eco32f_registerfile (
 	input 		 rst,
 	input 		 clk,
 
+	input 		 if_stall,
 	input 		 id_stall,
 	input 		 ex_stall,
 	input 		 ex_flush,
 
+	input [4:0] 	 if_rf_x_addr,
+	input [4:0] 	 if_rf_y_addr,
 	input [4:0] 	 id_rf_x_addr,
 	input [4:0] 	 id_rf_y_addr,
 	input [4:0] 	 ex_rf_x_addr,
@@ -43,6 +46,8 @@ module eco32f_registerfile (
 
 	input [31:0] 	 mem_alu_result,
 
+	output [31:0] 	 id_rf_x,
+	output [31:0] 	 id_rf_y,
 	output [31:0] 	 ex_rf_x,
 	output [31:0] 	 ex_rf_y,
 
@@ -51,12 +56,15 @@ module eco32f_registerfile (
 	input [31:0] 	 wb_rf_r
 );
 
-wire [31:0]	rf_x;
-wire [31:0] 	rf_y;
+wire [31:0]	rf_dout_x;
+wire [31:0] 	rf_dout_y;
+
+reg [31:0]	ex_rf_dout_x;
+reg [31:0] 	ex_rf_dout_y;
 
 wire	rf_re;
 
-assign rf_re = !id_stall;
+assign rf_re = !if_stall;
 
 always @(posedge clk) begin
 	if (!ex_stall) begin
@@ -71,35 +79,103 @@ end
 //
 // RAW (Read After Write) Hazard handling
 //
-// Execute stage register bypass.
+// Execute to decode stage register bypass.
+// I.e. bypass previous execute stage result to decode stage input.
+reg ex2id_bypass_x;
+reg ex2id_bypass_y;
+always @(posedge clk) begin
+	ex2id_bypass_x <= ex_rf_r_we & (ex_rf_r_addr == if_rf_x_addr);
+	ex2id_bypass_y <= ex_rf_r_we & (ex_rf_r_addr == if_rf_y_addr);
+end
+
+// Memory to decode stage register bypass
+// I.e. bypass previous memory stage result to decode stage input.
+reg mem2id_bypass_x;
+reg mem2id_bypass_y;
+always @(posedge clk) begin
+	mem2id_bypass_x <= mem_rf_r_we & (mem_rf_r_addr == if_rf_x_addr);
+	mem2id_bypass_y <= mem_rf_r_we & (mem_rf_r_addr == if_rf_y_addr);
+end
+// Execute to execute stage register bypass.
 // I.e. bypass previous execute stage result to execute stage input.
-reg ex_bypass_x;
-reg ex_bypass_y;
+reg ex2ex_bypass_x;
+reg ex2ex_bypass_y;
 always @(posedge clk)
 	if (!id_stall) begin
-		ex_bypass_x <= ex_rf_r_we & (ex_rf_r_addr == id_rf_x_addr);
-		ex_bypass_y <= ex_rf_r_we & (ex_rf_r_addr == id_rf_y_addr);
+		ex2ex_bypass_x <= ex_rf_r_we & (ex_rf_r_addr == id_rf_x_addr);
+		ex2ex_bypass_y <= ex_rf_r_we & (ex_rf_r_addr == id_rf_y_addr);
 	end
 
-// Memory stage register bypass
+// Memory to execute stage register bypass
 // I.e. bypass previous memory stage result to execute stage input.
-reg mem_bypass_x;
-reg mem_bypass_y;
+reg mem2ex_bypass_x;
+reg mem2ex_bypass_y;
 always @(posedge clk)
 	if (!id_stall) begin
-		mem_bypass_x <= mem_rf_r_we & (mem_rf_r_addr == id_rf_x_addr);
-		mem_bypass_y <= mem_rf_r_we & (mem_rf_r_addr == id_rf_y_addr);
+		mem2ex_bypass_x <= mem_rf_r_we & (mem_rf_r_addr == id_rf_x_addr);
+		mem2ex_bypass_y <= mem_rf_r_we & (mem_rf_r_addr == id_rf_y_addr);
+	end
+
+// Writeback to execute stage register bypass
+// I.e. bypass previous memory stage result to execute stage input.
+reg wb2ex_bypass_x;
+reg wb2ex_bypass_y;
+always @(posedge clk) begin
+	if (!id_stall) begin
+		wb2ex_bypass_x <= wb_rf_r_we & (wb_rf_r_addr == id_rf_x_addr);
+		wb2ex_bypass_y <= wb_rf_r_we & (wb_rf_r_addr == id_rf_y_addr);
+	end else begin
+		wb2ex_bypass_x <= 0;
+		wb2ex_bypass_y <= 0;
+	end
+end
+
+reg [31:0] wb2ex_bypass_result;
+always @(posedge clk)
+	if (wb_rf_r_we)
+		wb2ex_bypass_result <= wb_rf_r;
+
+assign id_rf_x = !rf_dout_valid ? id_last_rf_x :
+		 (id_rf_x_addr == 0) ? 0 : // Register $0 access
+		 ex2id_bypass_x ? mem_alu_result :
+		 mem2id_bypass_x ? wb_rf_r :
+		 rf_dout_x;
+
+assign id_rf_y = !rf_dout_valid ? id_last_rf_y :
+		 (id_rf_y_addr == 0) ? 0 : // Register $0 access
+		 ex2id_bypass_y ? mem_alu_result :
+		 mem2id_bypass_y ? wb_rf_r :
+		 rf_dout_y;
+
+// Save the last latched value
+reg		rf_dout_valid;
+reg [31:0]	id_last_rf_x;
+reg [31:0]	id_last_rf_y;
+always @(posedge clk) begin
+	rf_dout_valid <= rf_re;
+	if (rf_dout_valid) begin
+		id_last_rf_x <= id_rf_x;
+		id_last_rf_y <= id_rf_y;
+	end
+end
+
+always @(posedge clk)
+	if (!id_stall) begin
+		ex_rf_dout_x <= id_rf_x;
+		ex_rf_dout_y <= id_rf_y;
 	end
 
 // Register file output generation
 assign ex_rf_x = (ex_rf_x_addr == 0) ? 0 : // Register $0 access
-		 ex_bypass_x ? mem_alu_result :
-		 mem_bypass_x ? wb_rf_r :
-		 rf_x;
+		 ex2ex_bypass_x ? mem_alu_result :
+		 mem2ex_bypass_x ? wb_rf_r :
+		 wb2ex_bypass_x ? wb2ex_bypass_result :
+		 ex_rf_dout_x;
 assign ex_rf_y = (ex_rf_y_addr == 0) ? 0 : // Register $0 access
-		 ex_bypass_y ? mem_alu_result :
-		 mem_bypass_y ? wb_rf_r :
-		 rf_y;
+		 ex2ex_bypass_y ? mem_alu_result :
+		 mem2ex_bypass_y ? wb_rf_r :
+		 wb2ex_bypass_y ? wb2ex_bypass_result :
+		 ex_rf_dout_y;
 
 eco32f_simple_dpram_sclk #(
 	.ADDR_WIDTH	(5),
@@ -107,12 +183,12 @@ eco32f_simple_dpram_sclk #(
 	.ENABLE_BYPASS	(1)
 ) rf_ram_x (
 	.clk		(clk),
-	.raddr		(id_rf_x_addr),
+	.raddr		(if_rf_x_addr),
 	.re		(rf_re),
 	.waddr		(wb_rf_r_addr),
 	.we		(wb_rf_r_we),
 	.din		(wb_rf_r),
-	.dout		(rf_x)
+	.dout		(rf_dout_x)
 );
 
 eco32f_simple_dpram_sclk #(
@@ -121,12 +197,12 @@ eco32f_simple_dpram_sclk #(
 	.ENABLE_BYPASS	(1)
 ) rf_ram_y (
 	.clk		(clk),
-	.raddr		(id_rf_y_addr),
+	.raddr		(if_rf_y_addr),
 	.re		(rf_re),
 	.waddr		(wb_rf_r_addr),
 	.we		(wb_rf_r_we),
 	.din		(wb_rf_r),
-	.dout		(rf_y)
+	.dout		(rf_dout_y)
 );
 
 endmodule
