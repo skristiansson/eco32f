@@ -82,7 +82,9 @@ wire [31:0]		ex_alu_result;		// From eco32f_alu of eco32f_alu.v
 wire [31:0]		ex_branch_imm;		// From eco32f_decode of eco32f_decode.v
 wire			ex_bubble;		// From eco32f_decode of eco32f_decode.v
 wire			ex_cond_true;		// From eco32f_alu of eco32f_alu.v
+wire			ex_exc_div_by_zero;	// From eco32f_alu of eco32f_alu.v
 wire			ex_exc_ibus_fault;	// From eco32f_decode of eco32f_decode.v
+wire			ex_exc_illegal_insn;	// From eco32f_decode of eco32f_decode.v
 wire			ex_exc_itlb_invalid;	// From eco32f_decode of eco32f_decode.v
 wire			ex_exc_itlb_kmiss;	// From eco32f_decode of eco32f_decode.v
 wire			ex_exc_itlb_priv;	// From eco32f_decode of eco32f_decode.v
@@ -294,6 +296,7 @@ eco32f_decode eco32f_decode (/*AUTOINST*/
 	.ex_exc_itlb_umiss		(ex_exc_itlb_umiss),
 	.ex_exc_itlb_invalid		(ex_exc_itlb_invalid),
 	.ex_exc_itlb_priv		(ex_exc_itlb_priv),
+	.ex_exc_illegal_insn		(ex_exc_illegal_insn),
 	.ex_rf_x_addr			(ex_rf_x_addr[4:0]),
 	.ex_rf_y_addr			(ex_rf_y_addr[4:0]),
 	.ex_rf_r_addr			(ex_rf_r_addr[4:0]),
@@ -350,6 +353,7 @@ eco32f_alu eco32f_alu (/*AUTOINST*/
 	.ex_add_result			(ex_add_result[31:0]),
 	.ex_cond_true			(ex_cond_true),
 	.ex_alu_result			(ex_alu_result[31:0]),
+	.ex_exc_div_by_zero		(ex_exc_div_by_zero),
 	.mem_op_mul			(mem_op_mul),
 	.wb_op_mul			(wb_op_mul),
 	.wb_mul_result			(wb_mul_result[31:0]),

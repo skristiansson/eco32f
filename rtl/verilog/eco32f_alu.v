@@ -76,6 +76,8 @@ module eco32f_alu (
 	output 		  ex_cond_true,
 	output [31:0] 	  ex_alu_result,
 
+	output reg 	  ex_exc_div_by_zero,
+
 	output reg 	  mem_op_mul,
 	output reg 	  wb_op_mul,
 	output reg [31:0] wb_mul_result
@@ -158,7 +160,6 @@ wire [32:0]	div_sub;
 reg		div_neg;
 reg		div_load;
 reg		div_in_progress;
-reg		div_by_zero;
 
 assign div_stall = div_in_progress | (ex_op_div | ex_op_rem) & div_load;
 
@@ -184,7 +185,7 @@ always @(posedge clk) begin
 		div_d <= y;
 		div_r <= 0;
 		div_neg <= 0;
-		div_by_zero <= ex_op_div & (y == 0);
+		ex_exc_div_by_zero <= ex_op_div & (y == 0);
 
 		// Perform unsigned division on converted operands.
 		if (ex_signed_div) begin

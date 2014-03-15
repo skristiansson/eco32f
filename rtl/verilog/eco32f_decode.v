@@ -108,6 +108,7 @@ module eco32f_decode (
 	output reg 	  ex_exc_itlb_umiss,
 	output reg 	  ex_exc_itlb_invalid,
 	output reg 	  ex_exc_itlb_priv,
+	output reg 	  ex_exc_illegal_insn,
 
 	output reg [4:0]  ex_rf_x_addr,
 	output reg [4:0]  ex_rf_y_addr,
@@ -171,6 +172,8 @@ reg [1:0]	lsu_len;
 wire [31:0]	imm;
 wire [31:0]	br_imm;
 wire		signed_div;
+
+wire		illegal_insn;
 
 assign op_code = id_insn[31:26];
 
@@ -313,6 +316,10 @@ assign signed_div = (op_code == `ECO32F_OP_DIV)		|
 		    (op_code == `ECO32F_OP_REM)		|
 		    (op_code == `ECO32F_OP_REM);
 
+assign illegal_insn = (op_code == 6'h1e)	|
+		      (op_code == 6'h3e)	|
+		      (op_code == 6'h3f);
+
 always @(*)
 	case (op_code)
 	`ECO32F_OP_STB,
@@ -415,6 +422,7 @@ always @(posedge clk)
 		ex_exc_itlb_umiss <= id_exc_itlb_umiss;
 		ex_exc_itlb_invalid <= id_exc_itlb_invalid;
 		ex_exc_itlb_priv <= id_exc_itlb_priv;
+		ex_exc_illegal_insn <= illegal_insn;
 
 		ex_imm_sel <= !op_rrr & !op_rrb;
 		ex_imm <= imm;
@@ -482,7 +490,7 @@ always @(posedge clk)
 			ex_exc_itlb_umiss <= 0;
 			ex_exc_itlb_invalid <= 0;
 			ex_exc_itlb_priv <= 0;
-
+			ex_exc_illegal_insn <= 0;
 		end
 	end
 
