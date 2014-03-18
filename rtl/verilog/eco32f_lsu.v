@@ -242,7 +242,8 @@ always @(posedge clk)
 				endcase
 			end
 
-			if (lsu_exc)
+			// Abort on exceptions and flush
+			if (lsu_exc | mem_flush)
 				lsu_state <= LSU_CACHE_HIT_CHECK;
 		end
 
@@ -294,6 +295,7 @@ always @(posedge clk)
 				dwbm_stb_o <= 0;
 				dwbm_cyc_o <= 0;
 				dwbm_we_o <= 0;
+				cache_wr_en <= 0;
 				lsu_state <= LSU_CACHE_HIT_CHECK;
 			end
 		end
