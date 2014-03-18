@@ -64,7 +64,7 @@ reg [31:0] 	ex_rf_dout_y;
 
 wire	rf_re;
 
-assign rf_re = !if_stall;
+assign rf_re = !id_stall;
 
 always @(posedge clk) begin
 	if (!ex_stall) begin
@@ -135,16 +135,16 @@ always @(posedge clk)
 	if (wb_rf_r_we)
 		wb2ex_bypass_result <= wb_rf_r;
 
-assign id_rf_x = !rf_dout_valid ? id_last_rf_x :
-		 (id_rf_x_addr == 0) ? 0 : // Register $0 access
+assign id_rf_x = (id_rf_x_addr == 0) ? 0 : // Register $0 access
 		 ex2id_bypass_x ? mem_alu_result :
 		 mem2id_bypass_x ? wb_rf_r :
+		 !rf_dout_valid ? id_last_rf_x :
 		 rf_dout_x;
 
-assign id_rf_y = !rf_dout_valid ? id_last_rf_y :
-		 (id_rf_y_addr == 0) ? 0 : // Register $0 access
+assign id_rf_y = (id_rf_y_addr == 0) ? 0 : // Register $0 access
 		 ex2id_bypass_y ? mem_alu_result :
 		 mem2id_bypass_y ? wb_rf_r :
+		 !rf_dout_valid ? id_last_rf_y :
 		 rf_dout_y;
 
 // Save the last latched value

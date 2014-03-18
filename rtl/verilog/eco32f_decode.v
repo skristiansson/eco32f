@@ -34,6 +34,9 @@ module eco32f_decode (
 	input [31:0] 	  id_pc,
 	input [31:0] 	  id_insn,
 
+	input [31:0] 	  id_rf_x,
+	input [31:0] 	  id_rf_y,
+
 	output 		  id_bubble,
 
 	// Exceptions from fetch stage
@@ -49,6 +52,7 @@ module eco32f_decode (
 	output [4:0] 	  id_rf_r_addr,
 	output 		  id_rf_r_we,
 	input [4:0] 	  mem_rf_r_addr,
+	input 		  mem_rf_r_we,
 
 	// mul instruction in memory stage
 	input 		  mem_op_mul,
@@ -100,6 +104,8 @@ module eco32f_decode (
 	output reg [1:0]  ex_lsu_len,
 
 	output reg [31:0] ex_branch_imm,
+
+	output reg 	  ex_cond_true,
 
 	output reg [31:0] ex_pc /* verilator public */,
 
@@ -363,10 +369,36 @@ assign br_imm = op_rrb ? {{14{id_insn[15]}}, id_insn[15:0], 2'h0} :
 // backwards in the pipeline, i.e. when execute stage need a result from memory
 // stage. This is handled by inserting a 'nop bubble' in the pipeline.
 //
-assign id_bubble = (ex_op_load | ex_op_mul) & (id_rf_x_addr == ex_rf_r_addr ||
-					       id_rf_y_addr == ex_rf_r_addr) |
-		   mem_op_mul & (id_rf_x_addr == mem_rf_r_addr ||
-				 id_rf_y_addr == mem_rf_r_addr);
+assign id_bubble = (ex_op_load | ex_op_mul | op_rrb) & ex_rf_r_we &
+		   (id_rf_x_addr == ex_rf_r_addr ||
+		    id_rf_y_addr == ex_rf_r_addr) |
+		   (mem_op_mul | op_rrb) & mem_rf_r_we &
+		   (id_rf_x_addr == mem_rf_r_addr ||
+		    id_rf_y_addr == mem_rf_r_addr);
+
+// Condition compare
+wire x_eq_y;
+wire x_ltu_y;
+wire x_lts_y;
+
+wire cond_true;
+
+assign x_eq_y = id_rf_x == id_rf_y;
+assign x_ltu_y = id_rf_x < id_rf_y;
+assign x_lts_y = (id_rf_x < id_rf_y) & (id_rf_x[31] == id_rf_y[31]) |
+		 (id_rf_x[31] & !id_rf_y[31]);
+
+assign cond_true = op_beq & x_eq_y |
+		   op_bne & !x_eq_y |
+		   op_ble & (x_lts_y | x_eq_y) |
+		   op_bleu & (x_ltu_y | x_eq_y) |
+		   op_blt & x_lts_y |
+		   op_bltu & x_ltu_y |
+		   op_bge & !x_lts_y |
+		   op_bgeu & !x_ltu_y |
+		   op_bgt & !x_lts_y & !x_eq_y |
+		   op_bgtu & !x_ltu_y & !x_eq_y;
+
 
 // Registered output to execute stage
 always @(posedge clk)
@@ -427,6 +459,8 @@ always @(posedge clk)
 		ex_imm_sel <= !op_rrr & !op_rrb;
 		ex_imm <= imm;
 		ex_branch_imm <= br_imm + id_pc + 4;
+
+		ex_cond_true <= cond_true;
 
 		ex_pc <= id_pc;
 

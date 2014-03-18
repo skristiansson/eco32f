@@ -81,7 +81,7 @@ wire [31:0]		ex_add_result;		// From eco32f_alu of eco32f_alu.v
 wire [31:0]		ex_alu_result;		// From eco32f_alu of eco32f_alu.v
 wire [31:0]		ex_branch_imm;		// From eco32f_decode of eco32f_decode.v
 wire			ex_bubble;		// From eco32f_decode of eco32f_decode.v
-wire			ex_cond_true;		// From eco32f_alu of eco32f_alu.v
+wire			ex_cond_true;		// From eco32f_decode of eco32f_decode.v
 wire			ex_exc_div_by_zero;	// From eco32f_alu of eco32f_alu.v
 wire			ex_exc_ibus_fault;	// From eco32f_decode of eco32f_decode.v
 wire			ex_exc_illegal_insn;	// From eco32f_decode of eco32f_decode.v
@@ -290,6 +290,7 @@ eco32f_decode eco32f_decode (/*AUTOINST*/
 	.ex_lsu_sext			(ex_lsu_sext),
 	.ex_lsu_len			(ex_lsu_len[1:0]),
 	.ex_branch_imm			(ex_branch_imm[31:0]),
+	.ex_cond_true			(ex_cond_true),
 	.ex_pc				(ex_pc[31:0]),
 	.ex_exc_ibus_fault		(ex_exc_ibus_fault),
 	.ex_exc_itlb_kmiss		(ex_exc_itlb_kmiss),
@@ -311,12 +312,15 @@ eco32f_decode eco32f_decode (/*AUTOINST*/
 	.id_flush			(id_flush),
 	.id_pc				(id_pc[31:0]),
 	.id_insn			(id_insn[31:0]),
+	.id_rf_x			(id_rf_x[31:0]),
+	.id_rf_y			(id_rf_y[31:0]),
 	.id_exc_ibus_fault		(id_exc_ibus_fault),
 	.id_exc_itlb_kmiss		(id_exc_itlb_kmiss),
 	.id_exc_itlb_umiss		(id_exc_itlb_umiss),
 	.id_exc_itlb_invalid		(id_exc_itlb_invalid),
 	.id_exc_itlb_priv		(id_exc_itlb_priv),
 	.mem_rf_r_addr			(mem_rf_r_addr[4:0]),
+	.mem_rf_r_we			(mem_rf_r_we),
 	.mem_op_mul			(mem_op_mul));
 
 eco32f_registerfile eco32f_registerfile (/*AUTOINST*/
@@ -351,7 +355,6 @@ eco32f_alu eco32f_alu (/*AUTOINST*/
 	// Outputs
 	.alu_stall			(alu_stall),
 	.ex_add_result			(ex_add_result[31:0]),
-	.ex_cond_true			(ex_cond_true),
 	.ex_alu_result			(ex_alu_result[31:0]),
 	.ex_exc_div_by_zero		(ex_exc_div_by_zero),
 	.mem_op_mul			(mem_op_mul),
@@ -471,6 +474,8 @@ eco32f_ctrl eco32f_ctrl (/*AUTOINST*/
 	.lsu_stall			(lsu_stall),
 	.ex_pc				(ex_pc[31:0]),
 	.ex_alu_result			(ex_alu_result[31:0]),
+	.id_rf_x			(id_rf_x[31:0]),
+	.id_rf_y			(id_rf_y[31:0]),
 	.ex_rf_x			(ex_rf_x[31:0]),
 	.ex_rf_y			(ex_rf_y[31:0]),
 	.ex_imm				(ex_imm[31:0]),

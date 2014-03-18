@@ -174,12 +174,7 @@ always @(posedge clk) begin
 	id_exc_ibus_fault <= if_exc_ibus_fault;
 end
 
-//
-// This mux isn't entirely necessary, but it's serves as a workaround for a bug
-// in quartus 13.1, where the icache RAM would not be able to be inferred as a
-// block ram, due to being "asynchrounusly read".
-//
-wire [31:0] if_insn = if_flush ? `ECO32F_INSN_NOP : cache_rd_data;
+wire [31:0] if_insn = if_stall ? id_insn : cache_rd_data;
 
 assign op_rfx = (if_insn[31:26] == `ECO32F_OP_RFX);
 assign if_rf_x_addr = op_rfx ? 5'd30 : if_insn[25:21];

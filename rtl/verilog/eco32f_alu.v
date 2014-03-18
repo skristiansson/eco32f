@@ -73,7 +73,6 @@ module eco32f_alu (
 
 	output [31:0] 	  ex_add_result,
 
-	output 		  ex_cond_true,
 	output [31:0] 	  ex_alu_result,
 
 	output reg 	  ex_exc_div_by_zero,
@@ -115,22 +114,6 @@ assign and_result = x & y;
 assign sll_result = x << y[4:0];
 assign slr_result = x >> y[4:0];
 assign sar_result = (x >> y[4:0]) | ({32{x[31]}} << (32 - y[4:0]));
-
-// Condition compare
-assign x_eq_y = !(|xor_result);
-assign x_ltu_y = add_carry;
-assign x_lts_y = add_result[31] != sub_overflow;
-
-assign ex_cond_true = ex_op_beq & x_eq_y |
-		      ex_op_bne & !x_eq_y |
-		      ex_op_ble & (x_lts_y | x_eq_y) |
-		      ex_op_bleu & (x_ltu_y | x_eq_y) |
-		      ex_op_blt & x_lts_y |
-		      ex_op_bltu & x_ltu_y |
-		      ex_op_bge & !x_lts_y |
-		      ex_op_bgeu & !x_ltu_y |
-		      ex_op_bgt & !x_lts_y & !x_eq_y |
-		      ex_op_bgtu & !x_ltu_y & !x_eq_y;
 
 assign ex_alu_result = ex_op_or ? or_result :
 		       ex_op_and ? and_result :

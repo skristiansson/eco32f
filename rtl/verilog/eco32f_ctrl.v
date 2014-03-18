@@ -51,6 +51,9 @@ module eco32f_ctrl (
 	input [31:0] 	  ex_pc,
 	input [31:0] 	  ex_alu_result,
 
+	input [31:0] 	  id_rf_x,
+	input [31:0] 	  id_rf_y,
+
 	input [31:0] 	  ex_rf_x,
 	input [31:0] 	  ex_rf_y,
 	input [31:0] 	  ex_imm,
@@ -148,6 +151,7 @@ assign id_flush = ex_flush | do_branch;
 assign if_flush = id_flush;
 
 // Branch/jump logic
+
 assign do_branch = (ex_op_j | ex_op_jr | ex_op_rfx | ex_op_rrb & ex_cond_true) &
 		   !ex_stall;
 assign branch_pc = (ex_op_jr | ex_op_rfx) ? ex_rf_x : ex_branch_imm;
